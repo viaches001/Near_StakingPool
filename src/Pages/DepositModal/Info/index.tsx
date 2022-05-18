@@ -7,15 +7,17 @@ import {
 import { useStore, useExchangeRate } from '../../../store';
 
 interface Props {
-  amount: string 
+  amount: string,
+  coin: any
 }
-const Info: FunctionComponent<Props> = ({amount}) => {
+const Info: FunctionComponent<Props> = ({amount, coin}) => {
   const {state, dispatch} = useStore();
-  const rate = useExchangeRate();
+  const rates = useExchangeRate();
+  const rate = rates[coin.name];
   const fee = 0.25;
 
   let _amount = parseFloat(amount) > 0? parseFloat(amount) : 0;
-  const value = state.coinType=='usdc' ? _amount + fee : _amount * rate + fee;
+  const value = _amount * rate + fee;
 
   return (
     <VStack
@@ -38,7 +40,7 @@ const Info: FunctionComponent<Props> = ({amount}) => {
           fontWeight={'400'}
           lineHeight={'10px'}
         >
-          0.25 UST
+          0.25 NEAR
         </Text>
       </HStack>
       <HStack justify={'space-between'} w={'100%'}>
@@ -54,7 +56,7 @@ const Info: FunctionComponent<Props> = ({amount}) => {
           fontWeight={'400'}
           lineHeight={'10px'}
         >
-          {value.toLocaleString()} UST
+          {value.toLocaleString()} {coin.currency}
         </Text>
       </HStack>
     </VStack>

@@ -20,74 +20,23 @@ import {
   OpenDepositModal,
   OpenWithdrawModal,
   useStore,
+  useCoinApr,
+  useExchangeRate
 } from '../../../store';
+import {
+  coins
+} from '../../../constants';
+import { floor, floorNormalize } from '../../../Util';
+import AnimationNumber from '../../Components/AnimationNumber';
+import CoinRow from './CoinRow'
 
-interface Props{
-  data: {
-    time: number,
-    apr: number
-  }[],
-  id: string
-}
 const CoinTable: FunctionComponent = () => {
-  const data = [
-    {
-      img: 'img/usdc.png',
-      name: 'USDC',
-      currency: 'usd',
-      blockchain: 'USD Coin',
-      apy: '14.87',
-      balance: 0,
-      available: true
-    },
-    {
-      img: 'img/eth.png',
-      name: 'ETH',
-      currency: 'ETH',
-      blockchain: 'Ethereum',
-      apy: '14.87',
-      balance: 0,
-      available: true
-    },
-    {
-      img: 'img/dai.png',
-      name: 'DAI',
-      currency: 'usd',
-      blockchain: 'Dai',
-      apy: '14.87',
-      balance: 0,
-      available: true
-    },
-    {
-      img: 'img/wbtc.png',
-      name: 'wBTC',
-      currency: 'wBTC',
-      blockchain: 'Wrapped Bitcoin',
-      apy: '14.87',
-      balance: 0,
-      available: true
-    },
-    {
-      img: 'img/usdt.png',
-      name: 'USDT',
-      currency: 'usd',
-      blockchain: 'USD Tether',
-      apy: '14.87',
-      balance: 0,
-      available: true
-    },
-    {
-      img: 'img/NEARt.png',
-      name: 'NEARt',
-      currency: 'NEARt',
-      blockchain: 'NEARt Treasury(Coming Soon)',
-      apy: '14.87',
-      balance: 0,
-      available: false
-    },
-  ]
-
   const { state, dispatch } = useStore();
+  const coinPrices = useExchangeRate();
+  const coinApr = useCoinApr();
+  const history = state.amountHistory;
+  const last = history.length - 1;
+
   return (
     <Stack 
       direction={{sm:'column', md:'row', lg:'row'}}
@@ -104,11 +53,11 @@ const CoinTable: FunctionComponent = () => {
         <Table variant='simple' size='lg'>
           <Thead>
             <Tr>
-              <Th w={'25%'}>Name</Th>
+              <Th w={'20%'}>Name</Th>
               <Th w={'10%'}>
                 <Tooltip
                   label="Current annualized deposit rate"
-                  background={'#C4C4C4'} hasArrow
+                  background={'#C4C4C4'}
                   placement='top-start'
                   color={'black'}
                 >
@@ -124,7 +73,7 @@ const CoinTable: FunctionComponent = () => {
               <Th w={'30%'}>
                 <Tooltip
                   label="Total of all LUNA deposits including earnings "
-                  background={'#C4C4C4'} hasArrow
+                  background={'#C4C4C4'} 
                   placement='top-start'
                   color={'black'}
                 >
@@ -137,105 +86,19 @@ const CoinTable: FunctionComponent = () => {
                   </Text>
                 </Tooltip>
               </Th>
-              <Th w={'32%'}>Actions</Th>
+              <Th w={'40%'}>Actions</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {data.map(row => {
-              let type = row.name.toLocaleLowerCase();
-              return (<Tr>
-                <Td>
-                  <Stack 
-                    direction={{sm:'row', md:'row', lg:'row'}}
-                    w={'100%'}
-                    align={'left'}
-                    spacing={'5px'}
-                  >
-                    <Image
-                      borderRadius='full'
-                      boxSize='36px'
-                      src={row.img}
-                      alt='Dan Abramov'
-                      mt={'10px'}
-                    />
-                    <Stack 
-                      direction={{sm:'column', md:'column', lg:'column'}}
-                      align={'center'}
-                      justifyContent={'center'}
-                    >
-                      <Text
-                        fontSize={'18px'}
-                        fontWeight={'800'}
-                        color={'rgb(228, 228, 228)'}
-                        mx={0}
-                      >
-                        {row.name}
-                      </Text>
-                      <Text
-                        fontSize={'13px'}
-                        fontWeight={'400'}
-                        mt={'0px'}
-                      >
-                        {row.name}
-                      </Text>
-                    </Stack>
-                  </Stack>
-                </Td>
-                <Td>{row.apy}</Td>
-                <Td>
-                  <Text
-                    fontWeight={'800'}
-                  >
-                    {row.balance}&nbsp;{row.currency}
-                  </Text>
-                  <Text
-                    fontWeight={'400'}
-                  >
-                    {row.balance}&nbsp;USD Value
-                  </Text>
-                </Td>
-                <Td>
-                  <Stack 
-                    direction={{sm:'column', md:'row', lg:'row'}}
-                    w={'100%'}
-                    align={'center'}
-                    spacing={'10px'}
-                    justifyContent={'space-between'}
-                  >
-                    <Button 
-                      h={'45px'} 
-                      w={'46%'}
-                      background={'#493C3C'} 
-                      rounded={'25px'}
-                      onClick={() => OpenDepositModal(state, dispatch, type as COINTYPE)}
-                    >
-                      <Text
-                        fontSize={'11px'}
-                        fontWeight={'800'}
-                        lineHeight={'15px'}
-                      >
-                        Deposit
-                      </Text>
-                    </Button>
-                    <Button 
-                      h={'45px'} 
-                      w={'46%'}
-                      // background={'#493C3C'} 
-                      rounded={'25px'}
-                      variant='outline'
-                      onClick={() => OpenWithdrawModal(state, dispatch, type as COINTYPE)}
-                    >
-                      <Text
-                        fontSize={'11px'}
-                        fontWeight={'800'}
-                      >
-                        Withdraw
-                      </Text>
-                    </Button>
-                  </Stack>
-                </Td>
-              </Tr>)
-            })}
+            {coins.map(coin => (
+              <CoinRow 
+                coinPrices={coinPrices} 
+                coin={coin}
+                history={history} 
+                coinApr={coinApr}
+                last={last}
+              />
+            ))}
           </Tbody>
         </Table>
       </TableContainer>

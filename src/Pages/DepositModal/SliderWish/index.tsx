@@ -16,21 +16,20 @@ import { Dispatch, SetStateAction } from "react";
 import { MdCode, MdArrowDropDownCircle } from "react-icons/md";
 
 import Indicator from './Indicator';
-import { useUSTBalance, useLUNABalance, useStore } from '../../../store'
+import { useCoinBalance, useStore } from '../../../store'
 
 interface Props {
   amount: string,
   setAmount: Dispatch<SetStateAction<string>>,
 }
 const SliderWish: FunctionComponent<Props> = ({  amount, setAmount }) => {
-  const ustBalance = useUSTBalance();
-  const lunaBalance = useLUNABalance();
+  const ustBalances = useCoinBalance();
   const {state, dispatch} = useStore();
 
   const [sliderValue, setSliderValue] = useState(0);
   
   useEffect(() => {
-    let balance = state.coinType == 'usdc' ? ustBalance : lunaBalance;
+    let balance = ustBalances[state.coinType];
 
     if(parseFloat(amount) > 0)
     {
@@ -45,7 +44,7 @@ const SliderWish: FunctionComponent<Props> = ({  amount, setAmount }) => {
 
   const onChangeSlider = (value: number) => {
     setSliderValue(value);
-    let balance = state.coinType == 'usdc' ? ustBalance : lunaBalance;
+    let balance = ustBalances[state.coinType];
     setAmount(Math.floor(balance * value / 100).toString());
   }
   return (

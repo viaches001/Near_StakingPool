@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { HStack, Stack, Flex, Text, Image, Link } from '@chakra-ui/react'
-import { useStore, useExchangeRate, useLUNADeposited } from '../../../../store';
+import { useStore, useExchangeRate, useCoinDeposited } from '../../../../store';
 import { floor, floorNormalize } from '../../../../Util';
 import AnimationNumber from '../../../Components/AnimationNumber';
 
@@ -10,8 +10,8 @@ const TotalLocked: FunctionComponent = (props) => {
   const history = state.amountHistory;
   const last = history.length - 1;
 
-  const total = floor(last >= 0 ? history[last].totalUST : 0);
-  const upPercent = last >= 1 ? floor(100 *(history[last].totalUST / history[last - 1].totalUST - 1)) : 0;
+  const total = floor(last >= 0 ? history[last].totalUSD : 0);
+  const upPercent = last >= 1 ? floor(100 *(history[last].totalUSD / history[last - 1].totalUSD - 1)) : 0;
   
   return (
     <>
@@ -28,8 +28,7 @@ const TotalLocked: FunctionComponent = (props) => {
           fontWeight={'800'}
           lineHeight={'36px'}
         >
-          {/* <AnimationNumber value={total} />&nbsp; */}
-          <AnimationNumber value={165859532} />&nbsp;
+          <AnimationNumber value={total} />&nbsp;
         </Text>
         <Text
           fontSize={'20px'}
@@ -45,8 +44,7 @@ const TotalLocked: FunctionComponent = (props) => {
           lineHeight={'36px'}
           color={'green'}
         >
-          {/* {upPercent > 0 ? `▲${upPercent}` : `▼${-1 * upPercent}`}% */}
-          ▲$125%
+          {upPercent > 0 ? `▲${upPercent}` : `▼${-1 * upPercent}`}%
         </Text>
       </HStack>
     </>

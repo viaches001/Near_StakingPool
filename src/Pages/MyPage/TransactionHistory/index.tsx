@@ -3,7 +3,7 @@ import { VStack, Stack, Text, Divider, HStack, Image, Flex, Button } from '@chak
 import {  useInfiniteQuery } from "react-query"
 import axios from "axios"
 
-import { useWallet, useTerraAPIURL } from '../../../store';
+import { useWallet, useNearAPIURL } from '../../../store';
 import HistoryItem from './HistoryItem';
 
 export interface AccountHistory {
@@ -35,7 +35,7 @@ export interface CoinData {
 
 const TransactionHistory: FunctionComponent = (props) => {
   const wallet = useWallet();
-  const baseURL = useTerraAPIURL();
+  const baseURL = useNearAPIURL();
   
   const fetchAccountHistory = useCallback(
     async ({ pageParam = 0 }) => {

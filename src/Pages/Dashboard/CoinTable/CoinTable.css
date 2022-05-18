@@ -13,3 +13,11 @@ th {
 td {
   color: rgb(175, 175, 175)
 }
+
+.currencyText {
+  margin-top: 0.2rem!important;
+}
+
+.chainText {
+  margin-top: -0.3rem!important;
+}

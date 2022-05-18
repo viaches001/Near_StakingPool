@@ -5,17 +5,22 @@ import Warning from "./../../../assets/Warning.svg"
 import AnimationNumber from '../../Components/AnimationNumber';
 import { OpenDepositModal, useStore, useExchangeRate } from '../../../store';
 import { floorNormalize, floor } from '../../../Util';
+import { coins } from '../../../constants';
 
 const TotalPayed: FunctionComponent = (props) => {
   const { state, dispatch } = useStore();
-  const ustRewards = state.userInfoUst.reward_amount;
-  const lunaRewards = state.userInfoLuna.reward_amount;
-  const exchangeRate = useExchangeRate();
-  const rewards = floorNormalize(ustRewards) + floorNormalize(lunaRewards * exchangeRate);
+  const exchangeRates = useExchangeRate();
+  let rewards = 0;
+  coins.forEach(coin => {
+    const coinRewards = state.userInfoCoin[coin.name].reward_amount;
+    rewards += floorNormalize(coinRewards * exchangeRates[coin.name]);
+  })
   const usd = floor(rewards);
 
-  const depositTime_max = Math.max(state.userInfoUst.deposit_time, state.userInfoLuna.deposit_time);
-  const depositTime_min = Math.min(state.userInfoUst.deposit_time, state.userInfoLuna.deposit_time);
+  let deposit_times = coins.map(coin => state.userInfoCoin[coin.name].deposit_time);
+
+  const depositTime_max = Math.max(...deposit_times);
+  const depositTime_min = Math.min(...deposit_times);
   const depositTime = depositTime_min === 0 ? depositTime_max : depositTime_min
   const period = depositTime > 0 ? Date.now() - depositTime * 1000 : 0;
   const day = Math.floor((period > 0 ? period : 0) / 1000 / 60 / 60 / 24);

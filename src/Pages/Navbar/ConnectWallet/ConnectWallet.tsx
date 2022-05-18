@@ -10,9 +10,7 @@ import { toast } from 'react-toastify';
 import {MdOutlineAccountBalanceWallet} from 'react-icons/md'
 
 import Wallet from './../../../assets/Wallet.svg';
-import InformationPopover from './InformationPopover';
-import { VUST, VLUNA } from '../../../constants';
-import { useStore, ActionKind, useUSTBalance } from '../../../store';
+import { useStore, ActionKind, useCoinBalance } from '../../../store';
 import { shortenAddress, floorNormalize } from '../../../Util';
 
 
@@ -23,7 +21,7 @@ const ConnectWallet: FunctionComponent = () => {
 
   const wallet = useWallet()
   const connectedWallet = useConnectedWallet()
-  const ustBalance = useUSTBalance();
+  // const ustBalance = useCoinBalance();
 
   const lcd = useMemo(() => {
     if (!connectedWallet) {
@@ -56,10 +54,7 @@ const ConnectWallet: FunctionComponent = () => {
         }
         setBank(true);
         if (coins.get('uusd')) {
-          dispatch({type: ActionKind.setUusdBalance, payload: coins.get('uusd')?.amount.toNumber()});
-        }
-        if (coins.get('uluna')) {
-          dispatch({type: ActionKind.setUlunaBalance, payload: coins.get('uluna')?.amount.toNumber()});
+          dispatch({type: ActionKind.setUCoinBalance, payload: coins.get('uusd')?.amount.toNumber()});
         }
       }
     }
@@ -121,11 +116,10 @@ const ConnectWallet: FunctionComponent = () => {
               <Text ml={'15px'} color={'#F9D85E'}>
                 {shortenAddress(connectedWallet?.walletAddress.toString())}
                 &nbsp;|&nbsp;
-                {ustBalance}&nbsp;UST
+                {100}&nbsp;NEAR
               </Text>
             </Button>
           </PopoverTrigger>
-          <InformationPopover isOpen={isOpenInfomation} onClose={onCloseInfomation} connectTo={connectTo}/>
         </Popover>
       } 
     </>

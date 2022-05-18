@@ -19,89 +19,149 @@ export const farmInfo = {
   wallet: '',
   amount: '0'
 }
-export const userInfo = {
-  amount: "0",
-  deposit_time: "0",
-  reward_amount: "0",
-  wallet: ""
-}
-export const potInfo = {
+export const coins = [
+  {
+    img: 'img/usdc.svg',
+    currency: 'USDC',
+    name: 'usdc',
+    blockchain: 'USD Coin',
+    stable: true,
+    available: true
+  },
+  // {
+  //   img: 'img/usdt.svg',
+  //   currency: 'USDT',
+  //   name: 'usdt',
+  //   blockchain: 'USD Tether',
+  //   stable: true,
+  //   available: true
+  // },
+  // {
+  //   img: 'img/dai.svg',
+  //   currency: 'DAI',
+  //   name: 'dai',
+  //   blockchain: 'Dai',
+  //   stable: true,
+  //   available: true
+  // },
+  // {
+  //   img: 'img/usn.svg',
+  //   currency: 'USN',
+  //   name: 'usn',
+  //   blockchain: 'USD NEAR',
+  //   stable: true,
+  //   available: true
+  // },
+  // {
+  //   img: 'img/eth.svg',
+  //   currency: 'ETH',
+  //   name: 'eth',
+  //   blockchain: 'Ethereum',
+  //   stable: false,
+  //   available: true
+  // },
+  // {
+  //   img: 'img/wbtc.svg',
+  //   currency: 'wBTC',
+  //   name: 'wbtc',
+  //   blockchain: 'Wrapped Bitcoin',
+  //   stable: false,
+  //   available: true
+  // },
+  {
+    img: 'img/wnear.svg',
+    currency: 'wNEAR',
+    name: 'wnear',
+    blockchain: 'Wrapped Near',
+    stable: false,
+    available: true
+  },
+  // {
+  //   img: 'img/neart.svg',
+  //   currency: 'NEARt',
+  //   name: 'neart',
+  //   blockchain: 'NEARt Treasury(Coming Soon)',
+  //   stable: false,
+  //   available: false
+  // },
+];
+
+export const stableCoinCount = coins.filter(coin => coin.stable && coin.available).length;
+export const volatileCoinCount = coins.filter(coin => !coin.stable && coin.available).length;
+
+const userInfo_:any = {};
+coins.forEach(coin => {
+  userInfo_[coin.name] = {
+    amount: "0",
+    deposit_time: "0",
+    reward_amount: "0",
+    wallet: ""
+  }
+})
+export const userInfo = userInfo_;
+
+const uCoinBalance_:any = {};
+coins.forEach(coin => {
+  uCoinBalance_[coin.name] = 0;
+})
+export const uCoinBalance = uCoinBalance_;
+
+const coinPrice_:any = {};
+coins.forEach(coin => {
+  coinPrice_[coin.name] = 0;
+})
+export const coinPrice = coinPrice_;
+
+const potInfo_:any = {
   wallet: "",
-  ust_amount: "0",
-  luna_amount: "0",
-  qualified_ust_amount: "0",
-  qualified_luna_amount: "0"
 }
-export const amountHistory = [
-  {
-    time: 1641281704,
-    ust_amount: 0,
-    luna_amount: 0,
-    totalUST: 0,
-  },
-  {
-    time: 1643281704,
-    ust_amount: 0,
-    luna_amount: 0,
-    totalUST: 0
-  },
-];
+coins.forEach(coin => {
+  potInfo_[coin.name + '_amount'] = "0";
+  potInfo_["qualified_" + coin.name + "_amount"] = "0";
+})
+export const potInfo = potInfo_;
 
+const amountHistory_ = [];
+const historyInfo:any = {
+  time: 1641281704,
+  totalUSD: 0,
+}
+coins.forEach(coin => {
+  historyInfo[coin.name + '_amount'] = "0";
+})
+amountHistory_.push(historyInfo);
+export const amountHistory = amountHistory_;
 
-export const aprUstHistory = [
-  {
-    time: 1648939268,
-    apr: "3547",
-  },
-  {
-    time: 1648939268,
-    apr: "3547",
-  },
-  {
-    time: 1648939268,
-    apr: "3547",
-  },
-  {
-    time: 1648939268,
-    apr: "3547",
-  },
-  {
-    time: 1648939268,
-    apr: "3547",
-  },
-  {
-    time: 1648939268,
-    apr: "3547",
-  },
-];
-
-
-export const aprLunaHistory = [
-  {
-    time: 1648939268,
-    apr: "1861",
-  },
-  {
-    time: 1648939268,
-    apr: "1861",
-  },
-  {
-    time: 1648939268,
-    apr: "1861",
-  },
-  {
-    time: 1648939268,
-    apr: "1861",
-  },
-  {
-    time: 1648939268,
-    apr: "1861",
-  },
-  {
-    time: 1648939268,
-    apr: "1861",
-  },
-];
+const apiHistoryInfo:any = {};
+coins.forEach(coin => {
+  apiHistoryInfo[coin.name] = [
+    {
+      time: 1648939268,
+      apr: "3547",
+    },
+    {
+      time: 1648939268,
+      apr: "3547",
+    },
+    {
+      time: 1648939268,
+      apr: "3547",
+    },
+    {
+      time: 1648939268,
+      apr: "3547",
+    },
+    {
+      time: 1648939268,
+      apr: "3547",
+    },
+    {
+      time: 1648939268,
+      apr: "3547",
+    },
+  ];
+})
+export const aprHistory = apiHistoryInfo;
 
 export const successOption: any = {
   position: "top-right",
@@ -115,12 +175,12 @@ export const successOption: any = {
 };
 
 export const errorOption: any = {
-position: "top-right",
-type: "error",
-autoClose: 5000,
-hideProgressBar: false,
-closeOnClick: true,
-pauseOnHover: true,
-draggable: true,
-progress: undefined,
+  position: "top-right",
+  type: "error",
+  autoClose: 5000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  progress: undefined,
 };

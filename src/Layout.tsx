@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react'
 import { QueryClient, QueryClientProvider, useInfiniteQuery } from "react-query"
 import { Outlet, Link } from "react-router-dom";
 import { VStack, Flex, useDisclosure, useEventListenerMap } from '@chakra-ui/react'
-import { useLCD, useWallet, useTerraAPIURL, useStore, useNetworkName, ActionKind } from './store';
+import { useLCD, useWallet, useNearAPIURL, useStore, useNetworkName, ActionKind } from './store';
 
 import Navbar from './Pages/Navbar'
 import Footer from "./Pages/Footer";
@@ -34,7 +34,7 @@ const Layout = () => {
     const fetchAll = async () => {
       fetchData(state, dispatch)
     }
-    if (checkNetwork(wallet, state))
+    // if (checkNetwork(wallet, state))
       fetchAll()
   }, [lcd, wallet])
 

@@ -18,7 +18,7 @@ import SliderWish from './SliderWish';
 import Info from './Info';
 import { useStore, useWallet, useLCD, ActionKind } from '../../store';
 import {estimateSend, fetchData, sleep} from '../../Util';
-import {POOL, successOption} from '../../constants';
+import {POOL, successOption, coins} from '../../constants';
 
 interface Props{
   isOpen: boolean,
@@ -30,6 +30,7 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
   const lcd = useLCD();
   const {state, dispatch} = useStore();
   const coinType = state.coinType;
+  const coin = coins.find(item => item.name == coinType);
 
   const deposit = async () => {
     if(parseFloat(amount) <= 0  || !wallet?.walletAddress)
@@ -37,16 +38,13 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
       
     let val = Math.floor(parseFloat(amount) * 10 ** 6);
     let msg;
-    if(coinType === 'usdc')
-      msg = { deposit_ust: {qualified: state.qualified} }
-    else
-      msg = { deposit_luna: {qualified: state.qualified} }
+    msg = { [`deposit_${coinType}`]: {qualified: state.qualified} }
 
     let deposit_msg = new MsgExecuteContract(
       wallet?.walletAddress,
       POOL,
       msg,
-      coinType === 'usdc'? {uusd: val} : {uluna: val}
+      {uusd: val}
     );
     let res = await estimateSend(wallet, lcd, [deposit_msg], "Success Deposit", "deposit");
     if(res){
@@ -119,7 +117,7 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
                 <Image 
                   borderRadius='full'
                   boxSize='36px'
-                  src={'img/dai.png'}
+                  src={coin?.img}
                   alt='Dan Abramov'
                   mt={'10px'}
                 />
@@ -130,7 +128,7 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
                     lineHeight={'36px'}
                     color={'white'}
                   >
-                    {'DAI'}
+                    {coin?.currency}
                   </Text>
                   <Text
                     fontSize={'13px'}
@@ -138,16 +136,16 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
                     lineHeight={'15.6px'}
                     color={'white'}
                   >
-                      {'Dai'}
+                      {coin?.blockchain}
                   </Text>
                 </VStack>
               </HStack>
            </GridItem>
         </Grid>
-        <InputPanel amount={amount} setAmount={setAmount}/>
+        <InputPanel amount={amount} setAmount={setAmount} coin={coin}/>
         <SliderWish amount={amount} setAmount={setAmount}/>
         <Divider mt={'23px'} orientation='horizontal' variant={'dashed'} color={'#CEC0C0'} />
-        <Info amount={amount}/>
+        <Info amount={amount} coin={coin}/>
         <Divider mt={'23px'} orientation='horizontal' variant={'dashed'} color={'#CEC0C0'} />
         <Button 
           w={'100%'} 

@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Stack, VStack, Flex, Button } from '@chakra-ui/react'
 
-import { useLCD, useWallet, useTerraAPIURL, useStore, useNetworkName } from '../../store';
+import { useLCD, useWallet, useNearAPIURL, useStore, useNetworkName } from '../../store';
 import Title from './Title';
 import Price from './Price';
 import Farmed from './Farmed';

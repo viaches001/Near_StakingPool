@@ -1,26 +1,47 @@
 import React, { FunctionComponent, useEffect, useState, useMemo } from 'react';
 import { HStack, Stack, VStack, Flex, Text, Image, Link, Center, Divider } from '@chakra-ui/react'
 import {
-  useUSTApr,
-  useLUNAApr,
+  useCoinApr,
   useExchangeRate
 } from '../../../store';
 import { floor } from '../../../Util';
 import EarnChart from './EarnChart';
 import Earn from './Earn';
 import Value from './Value';
+import { coins, stableCoinCount, volatileCoinCount } from '../../../constants';
 
 const How: FunctionComponent = (props) => {
-  const [denom, setDenom] = useState('LUNA');
+  const [denom, setDenom] = useState('STABLE');
   const [year, setYear] = useState(10);
   const [amount, setAmount] = useState('100');
 
-  const rate = useExchangeRate();
-  const _amount = floor(denom == 'LUNA' ? parseFloat(amount) * rate : parseFloat(amount));
+  const coinPrices = useExchangeRate();
+  let stableRate:number = 0;
+  let volatileRate:number = 0;
 
-  const ustApr = useUSTApr();
-  const lunaApr = useLUNAApr();
-  const apr = denom == 'LUNA' ? lunaApr : ustApr;
+  coins.filter(coin => coin.available).forEach(coin => {
+    const rate = coinPrices[coin.name];
+    if(coin.stable) {
+      stableRate += rate;
+    }
+    else volatileRate += rate;
+  })
+
+  const _amount = floor(denom == 'STABLE' ? parseFloat(amount) * stableRate/stableCoinCount : parseFloat(amount) * volatileRate/volatileCoinCount);
+
+  let stableApr = 0;
+  let volatileApr = 0;
+
+  const coinApr = useCoinApr();
+  coins.filter(coin => coin.available).forEach(coin => {
+    const apr = coinApr[coin.name];
+    if(coin.stable) {
+      stableApr += apr;
+    }
+    else volatileApr += apr;
+  })
+
+  const apr = denom == 'STABLE' ? stableApr/stableCoinCount : volatileApr/volatileCoinCount;
 
   let total = _amount;
   for (let i = 0; i < year; i++) {
@@ -55,7 +76,6 @@ const How: FunctionComponent = (props) => {
       p={{ sm: '10px', md: '20px', lg: '59px' }}
       align={'baseline'}
     >
-
       <Text
         fontSize={'20px'}
         fontWeight={'860'}

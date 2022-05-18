@@ -3,14 +3,18 @@ import { VStack, HStack, Stack, Flex, Text, Tooltip, Image, Center, Divider, But
 
 import AnimationNumber from '../../../Components/AnimationNumber';
 import Warning from '../../../../assets/Warning.svg'
-import { OpenDepositModal, useStore, useUSTDeposited, useLUNADeposited, useExchangeRate } from '../../../../store';
+import { OpenDepositModal, useStore, useCoinDeposited, useExchangeRate } from '../../../../store';
+import { coins } from '../../../../constants';
 
 const Projected: FunctionComponent = (props) => {
   const {state, dispatch} = useStore();
-  const ustDeposited = useUSTDeposited();
-  const lunaDeposited = useLUNADeposited();
+  const coinDeposited = useCoinDeposited();
   const rate = useExchangeRate();
-  const total = ustDeposited + lunaDeposited * rate;
+  let total = 0;
+  coins.forEach(coin => {
+    total = coinDeposited[coin.name] * rate;
+  })
+
   const dayReward = total/1000*24;
 
   const remain = 60 - Math.floor((Date.now() / 1000 - state.farmStartTime) / 60 / 60 / 24);

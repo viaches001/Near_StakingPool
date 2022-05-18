@@ -2,22 +2,19 @@ import React, { FunctionComponent } from 'react';
 import { VStack, HStack, Stack, Flex, Text, Input, Link, Center, Divider, Button, useBoolean } from '@chakra-ui/react'
 import { Dispatch, SetStateAction } from "react";
 import { floorNormalize } from '../../../Util';
-import { useUSTDeposited, useLUNADeposited, COINTYPE, useStore, ActionKind } from '../../../store'
+import { useCoinDeposited, COINTYPE, useStore, ActionKind } from '../../../store'
 
 interface Props {
   amount: string,
+  coin: any,
   setAmount: Dispatch<SetStateAction<string>>,
 }
 const InputPanel: FunctionComponent<Props> = (props) => {
   const { state, dispatch } = useStore();
-  const ustDeposited = useUSTDeposited() + floorNormalize(state.userInfoUst.reward_amount);
-  const lunaDeposited = useLUNADeposited() + floorNormalize(state.userInfoLuna.reward_amount);
+  const coinDeposited = useCoinDeposited()[state.coinType] + floorNormalize(state.userInfoCoin[state.coinType].reward_amount);
 
   const maxBalance = () => {
-    if (state.coinType === 'usdc')
-      props.setAmount(ustDeposited.toString());
-    else
-      props.setAmount(lunaDeposited.toString());
+    props.setAmount(coinDeposited.toString());
   }
   return (
     <VStack w={'100%'} spacing={'6px'}>
@@ -69,7 +66,7 @@ const InputPanel: FunctionComponent<Props> = (props) => {
           cursor={'pointer'}
           onClick={() => maxBalance()}
         >
-          {state.coinType == 'usdc' ? `MAX balance  ${ustDeposited} UST` : `MAX balance  ${lunaDeposited} LUNA`}
+          MAX: {coinDeposited} {props.coin.currency}
         </Text>
       </Flex>
     </VStack>
