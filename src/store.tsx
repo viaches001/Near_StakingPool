@@ -117,7 +117,7 @@ export const reducer = (state: AppContextInterface,  action: Action ) => {
     case ActionKind.setLcd:
       return { ...state, lcd: action.payload }
     case ActionKind.setUCoinBalance:
-      return { ...state, uCoinBalance: action.payload }
+      return { ...state, uCoinBalance: { ...state.uCoinBalance, [action.payload.type]: action.payload.data } }
     case ActionKind.setTab:
       return { ...state, tab: action.payload }
     case ActionKind.setOpenDepositModal:

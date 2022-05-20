@@ -15,7 +15,7 @@ import { AccountView } from "near-api-js/lib/providers/provider";
 import { providers, utils } from "near-api-js";
 
 type Account = AccountView & {
-  account_id: string;
+  account_id: string
 };
 
 const ConnectWallet: FunctionComponent = () => {
@@ -54,45 +54,23 @@ const ConnectWallet: FunctionComponent = () => {
     setLoading(true);
 
     getAccount().then((nextAccount) => {
+      setBank(true);
       setAccount(nextAccount);
       setLoading(false);
+
+      const amount = nextAccount?.amount;
+      dispatch({type: ActionKind.setUCoinBalance, payload: { type: 'near', data: floorNormalize(amount as any / 10 ** 18)}});
+
+      if (!accountId) {
+        dispatch({ type: ActionKind.setConnected, payload: false });
+        return;
+      }
+
+      dispatch({ type: ActionKind.setConnected, payload: true });
+      dispatch({ type: ActionKind.setConnectedWallet, payload: selector });
     });
-  }, [accountId, getAccount]);
 
-  // const lcd:any = useMemo(() => {
-  //   if (!accountId) {
-  //     dispatch({ type: ActionKind.setConnected, payload: false });
-
-  //     return undefined;
-  //   }
-  //   dispatch({ type: ActionKind.setConnected, payload: true });
-  //   // dispatch({ type: ActionKind.setConnectedWallet, payload: selector });
-  //   return lcd;
-  // }, [accountId, dispatch])
-
-  // useEffect(() => {
-  //   async function fetchBalance() {
-  //     if (accountId && lcd) {
-  //       try {
-  //         [coins,] = await lcd.bank.balance(connectedWallet.walletAddress);
-  //       } catch (e) {
-  //         toast("Can't fetch Wallet balance");
-  //         return;
-  //       }
-  //       setBank(true);
-  //       if (coins.get('uusd')) {
-  //         dispatch({type: ActionKind.setUusdBalance, payload: coins.get('uusd')?.amount.toNumber()});
-  //       }
-  //       if (coins.get('uluna')) {
-  //         dispatch({type: ActionKind.setUlunaBalance, payload: coins.get('uluna')?.amount.toNumber()});
-  //       }
-  //     }
-  //   }
-
-  //   if (connectedWallet && lcd) {
-  //     fetchBalance()
-  //   }
-  // }, [lcd, accountId, dispatch, state.loading])
+  }, [accountId, getAccount, dispatch]);
 
   return (
     <>
@@ -137,7 +115,7 @@ const ConnectWallet: FunctionComponent = () => {
                 {/* {shortenAddress(connectedWallet?.walletAddress.toString())} */}
                 {shortenAddress(accountId?.toString())}
                 &nbsp;|&nbsp;
-                {100}&nbsp;NEAR
+                {state.uCoinBalance.near}&nbsp;NEAR
               </Text>
             </Button>
           </PopoverTrigger>

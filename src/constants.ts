@@ -107,7 +107,7 @@ coins.forEach(coin => {
 })
 export const userInfo = userInfo_;
 
-const uCoinBalance_:any = {};
+const uCoinBalance_:any = { near: 0 };
 coins.forEach(coin => {
   uCoinBalance_[coin.name] = 0;
 })
