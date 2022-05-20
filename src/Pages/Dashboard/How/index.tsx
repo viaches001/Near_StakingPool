@@ -15,12 +15,12 @@ const How: FunctionComponent = (props) => {
   const [year, setYear] = useState(10);
   const [amount, setAmount] = useState('100');
 
-  const coinPrices = useExchangeRate();
+  const rates = useExchangeRate();
   let stableRate:number = 0;
   let volatileRate:number = 0;
 
   coins.filter(coin => coin.available).forEach(coin => {
-    const rate = coinPrices[coin.name];
+    const rate = rates[coin.name];
     if(coin.stable) {
       stableRate += rate;
     }

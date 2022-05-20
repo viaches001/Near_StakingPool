@@ -10,16 +10,16 @@ import AnimationNumber from '../../../Components/AnimationNumber';
 import { floor, floorNormalize } from '../../../../Util';
 
 interface Props {
-    coinPrices: any,
+    rates: any,
     coin: any,
     history: any,
     last: number,
     coinApr: any
 }
 
-const CoinRow: FunctionComponent<Props> = ({coinPrices, coinApr, coin, history, last}) => {
+const CoinRow: FunctionComponent<Props> = ({rates, coinApr, coin, history, last}) => {
   const { state, dispatch } = useStore();
-  const rate = coinPrices[coin.name];
+  const rate = rates[coin.name];
   const amount = (last >= 0 ? floor(history[last][`${coin.name}_amount`]) : 0)+
     + floorNormalize(state.coin_total_rewards[coin.name]);
   const usd_amount = amount * rate;

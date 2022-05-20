@@ -3,6 +3,7 @@ import { Stack, Flex } from '@chakra-ui/react'
 
 import Tab from './Tab'
 import ConnectWallet from './ConnectWallet';
+import { WalletSelectorContextProvider } from '../../context/WalletSelectorContext';
 
 const Navbar: FunctionComponent = (props) => {
   return (
@@ -25,7 +26,9 @@ const Navbar: FunctionComponent = (props) => {
         <Tab id={'earn'} >EARN</Tab>
         <Tab id={'utility'} >UTILITY+</Tab>
       </Stack>
-      <ConnectWallet />
+      <WalletSelectorContextProvider>
+        <ConnectWallet />
+      </WalletSelectorContextProvider>
     </Flex>
   );
 }

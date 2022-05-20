@@ -12,7 +12,7 @@ const TVL: FunctionComponent = (props) => {
   useEffect( () => {
     const fetchData = async () => {
       const data: any = await axios.get(
-        "https://api.llama.fi/charts/Terra"
+        "https://api.llama.fi/charts/Near"
       );
       return data;
     }

@@ -13,10 +13,10 @@ const CircularView: FunctionComponent = (props) => {
 
   let stableAmount = 0;
   let volatileAmount = 0;
-  const coinPrices = useExchangeRate();
+  const rates = useExchangeRate();
   
   coins.forEach(coin => {
-    const rate = coinPrices[coin.name];
+    const rate = rates[coin.name];
     const amount = (last >= 0 ? floor(history[last][`${coin.name}_amount`] * rate) : 0)+
       + floorNormalize(state.coin_total_rewards[coin.name] * rate);
     if(coin.stable) {

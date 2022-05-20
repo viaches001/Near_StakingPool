@@ -43,43 +43,27 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     // coin_total_rewards = undefined,
     status: any = undefined
 
-  // coins.forEach(async coin => {
-  //   try {
-  //     coinInfo[coin.name] = await axios.get(
-  //       `https://api.extraterrestrial.money/v1/api/prices?symbol=${coin.currency}`
-  //     );
-  //   } catch (e) { }
-  // })
-
-  coinInfo = {
-    usdc: {
-      data: {
-        prices: {
-          USDC: {
-            price: 1.01
-          }
-        }
-      }
-    },
-    wnear: {
-      data: {
-        prices: {
-          wNEAR: {
-            price: 2.03
-          }
-        }
-      }
+  coinInfo = {};
+  try {
+    for(let coin of coins)
+    {
+      axios.defaults.headers.post['Access-Control-Allow-Origin'] = '*';
+      const res = await axios.get(
+        `https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${coin.id}`
+      );
+      coinInfo[coin.name] = res.data[coin.id].usd;
     }
-  }
-
-  const coinPrices:any = {};
+  } catch (e) { }
+  
+  const rates:any = {};
   coins.forEach(coin => {
-    coinPrices[coin.name] = coinInfo[coin.name] ? coinInfo[coin.name]?.data.prices[coin.currency].price : state.coinPrice[coin.name];
+    rates[coin.name] = coinInfo[coin.name] ? coinInfo[coin.name] : state.coinPrice[coin.name];
   })
+  console.log(rates)
 
   coins.forEach(coin => {
-    if (coinPrices[coin.name] !== undefined)
-      dispatch({ type: ActionKind.setCoinPrice, payload: { type: coin.name, data: coinPrices[coin.name]} });
+    if (rates[coin.name] !== undefined)
+      dispatch({ type: ActionKind.setCoinPrice, payload: { type: coin.name, data: rates[coin.name]} });
   })
 
   // try {
@@ -141,7 +125,7 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
 
   if (status) {
     if (status.amount_history !== undefined)
-      dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(status.amount_history, coinPrices) });
+      dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(status.amount_history, rates) });
     coins.forEach(coin => {
       if (status[`apr_${coin.name}_history`] !== undefined)
         dispatch({ type: ActionKind.setAprHistory, payload: { type: coin.name, data: status[`apr_${coin.name}_history`] } });
@@ -224,7 +208,7 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     } catch (e) { }
 
     if (amountHistory !== undefined)
-      dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(amountHistory,coinPrices) });
+      dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(amountHistory,rates) });
 
     coins.forEach(async coin => {
       if (aprHistory !== undefined)

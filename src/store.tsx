@@ -37,6 +37,7 @@ export interface AppContextInterface {
   txhash: string | undefined,
   qualified: boolean,
   potInfo: any,
+  connectedWallet: any
 }
 
 const initialState: AppContextInterface = {
@@ -68,6 +69,7 @@ const initialState: AppContextInterface = {
   txhash: undefined,
   qualified: false,
   potInfo: potInfo,
+  connectedWallet: undefined
 }
 
 export enum ActionKind{
@@ -76,7 +78,6 @@ export enum ActionKind{
   setPoolAddr,
   setLcd,
   setConnected,
-  setWallet,
   setUCoinBalance,
   setTab,
   setOpenDepositModal,
@@ -95,7 +96,8 @@ export enum ActionKind{
   setCoinTotalRewards,
   setTxhash,
   setQualified,
-  setPotInfo
+  setPotInfo,
+  setConnectedWallet
 }
 
 const StoreContext = createContext<{ state: AppContextInterface; dispatch: React.Dispatch<any>; }>
@@ -114,8 +116,6 @@ export const reducer = (state: AppContextInterface,  action: Action ) => {
       return { ...state, connected: action.payload }
     case ActionKind.setLcd:
       return { ...state, lcd: action.payload }
-    case ActionKind.setWallet:
-      return { ...state, wallet: action.payload }
     case ActionKind.setUCoinBalance:
       return { ...state, uCoinBalance: action.payload }
     case ActionKind.setTab:
@@ -154,6 +154,8 @@ export const reducer = (state: AppContextInterface,  action: Action ) => {
       return {...state, qualified: action.payload}
     case ActionKind.setPotInfo:
       return {...state, potInfo: action.payload}
+    case ActionKind.setConnectedWallet:
+      return {...state, connectedWallet: action.payload}
     default:
       return state
   }

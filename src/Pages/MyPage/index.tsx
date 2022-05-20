@@ -1,9 +1,6 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Stack, VStack, Flex, Button, Grid, GridItem } from '@chakra-ui/react'
 
-import { QueryClient, QueryClientProvider, useInfiniteQuery } from "react-query"
-import { useLCD, useWallet, useNearAPIURL, useStore, useNetworkName } from '../../store';
-
 import Title from './Title'
 import TotalValue from './TotalValue';
 import TotalPayed from './TotalPayed';

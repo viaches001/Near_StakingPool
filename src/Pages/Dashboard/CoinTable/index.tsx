@@ -32,7 +32,7 @@ import CoinRow from './CoinRow'
 
 const CoinTable: FunctionComponent = () => {
   const { state, dispatch } = useStore();
-  const coinPrices = useExchangeRate();
+  const rates = useExchangeRate();
   const coinApr = useCoinApr();
   const history = state.amountHistory;
   const last = history.length - 1;
@@ -92,11 +92,12 @@ const CoinTable: FunctionComponent = () => {
           <Tbody>
             {coins.map(coin => (
               <CoinRow 
-                coinPrices={coinPrices} 
+                rates={rates} 
                 coin={coin}
                 history={history} 
                 coinApr={coinApr}
                 last={last}
+                key={coin.name}
               />
             ))}
           </Tbody>

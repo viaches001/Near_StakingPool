@@ -1,79 +1,98 @@
-import React, { FunctionComponent, useState, useMemo, useEffect } from 'react';
+import React, { FunctionComponent, useState, useMemo, useEffect, useCallback } from 'react';
 import { Flex, Text, Button, Image, Spinner, useDisclosure } from '@chakra-ui/react'
 import {
   Popover,
   PopoverTrigger,
 } from '@chakra-ui/react'
-import { useWallet, useConnectedWallet } from '@terra-money/wallet-provider'
-import { LCDClient, WasmAPI, Coins, Coin } from '@terra-money/terra.js'
 import { toast } from 'react-toastify';
 import {MdOutlineAccountBalanceWallet} from 'react-icons/md'
-
 import Wallet from './../../../assets/Wallet.svg';
 import { useStore, ActionKind, useCoinBalance } from '../../../store';
 import { shortenAddress, floorNormalize } from '../../../Util';
+import * as nearAPI from "near-api-js";
+import { useWalletSelector } from '../../../context/WalletSelectorContext';
+import { AccountView } from "near-api-js/lib/providers/provider";
+import { providers, utils } from "near-api-js";
 
+type Account = AccountView & {
+  account_id: string;
+};
 
 const ConnectWallet: FunctionComponent = () => {
   const { state, dispatch } = useStore();
   const [bank, setBank] = useState(false);
   const { isOpen: isOpenInfomation, onOpen: onOpenInfomation, onClose: onCloseInfomation } = useDisclosure();
+  const { selector, accounts, accountId, setAccountId } = useWalletSelector();
+  const [account, setAccount] = useState<Account | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const wallet = useWallet()
-  const connectedWallet = useConnectedWallet()
-  // const ustBalance = useCoinBalance();
-
-  const lcd = useMemo(() => {
-    if (!connectedWallet) {
-      dispatch({ type: ActionKind.setConnected, payload: false });
-      dispatch({ type: ActionKind.setWallet, payload: undefined });
-
-      return undefined;
+  const getAccount = useCallback(async (): Promise<Account | null> => {
+    if (!accountId) {
+      return null;
     }
-    dispatch({ type: ActionKind.setConnected, payload: true });
-    dispatch({ type: ActionKind.setWallet, payload: connectedWallet });
-    
-    let lcd =  new LCDClient({
-      URL: connectedWallet.network.lcd,
-      chainID: connectedWallet.network.chainID,
-    })
-    dispatch({ type: ActionKind.setLcd, payload: lcd });
 
-    return lcd;
-  }, [connectedWallet, dispatch])
+    const { nodeUrl } = selector.network;
+    const provider = new providers.JsonRpcProvider({ url: nodeUrl });
+
+    return provider
+      .query<AccountView>({
+        request_type: "view_account",
+        finality: "final",
+        account_id: accountId,
+      })
+      .then((data) => ({
+        ...data,
+        account_id: accountId,
+      }));
+  }, [accountId, selector.network]);
 
   useEffect(() => {
-    async function fetchBalance() {
-      if (connectedWallet?.walletAddress && lcd) {
-        let coins: Coins;
-        try {
-          [coins,] = await lcd.bank.balance(connectedWallet.walletAddress);
-        } catch (e) {
-          toast("Can't fetch Wallet balance");
-          return;
-        }
-        setBank(true);
-        if (coins.get('uusd')) {
-          dispatch({type: ActionKind.setUCoinBalance, payload: coins.get('uusd')?.amount.toNumber()});
-        }
-      }
+    if (!accountId) {
+      return setAccount(null);
     }
 
-    if (connectedWallet && lcd) {
-      fetchBalance()
-    }
-  }, [connectedWallet, lcd, dispatch, state.loading])
+    setLoading(true);
 
-  function connectTo(to: string) {
-    if (to === 'extension') {
-      wallet.connect(wallet.availableConnectTypes[0])
-    } else if (to === 'mobile') {
-      wallet.connect(wallet.availableConnectTypes[1])
-    } else if (to === 'disconnect') {
-      wallet.disconnect()
-      // dispatch({ type: 'setWallet', message: {} })
-    }
-  }
+    getAccount().then((nextAccount) => {
+      setAccount(nextAccount);
+      setLoading(false);
+    });
+  }, [accountId, getAccount]);
+
+  // const lcd:any = useMemo(() => {
+  //   if (!accountId) {
+  //     dispatch({ type: ActionKind.setConnected, payload: false });
+
+  //     return undefined;
+  //   }
+  //   dispatch({ type: ActionKind.setConnected, payload: true });
+  //   // dispatch({ type: ActionKind.setConnectedWallet, payload: selector });
+  //   return lcd;
+  // }, [accountId, dispatch])
+
+  // useEffect(() => {
+  //   async function fetchBalance() {
+  //     if (accountId && lcd) {
+  //       try {
+  //         [coins,] = await lcd.bank.balance(connectedWallet.walletAddress);
+  //       } catch (e) {
+  //         toast("Can't fetch Wallet balance");
+  //         return;
+  //       }
+  //       setBank(true);
+  //       if (coins.get('uusd')) {
+  //         dispatch({type: ActionKind.setUusdBalance, payload: coins.get('uusd')?.amount.toNumber()});
+  //       }
+  //       if (coins.get('uluna')) {
+  //         dispatch({type: ActionKind.setUlunaBalance, payload: coins.get('uluna')?.amount.toNumber()});
+  //       }
+  //     }
+  //   }
+
+  //   if (connectedWallet && lcd) {
+  //     fetchBalance()
+  //   }
+  // }, [lcd, accountId, dispatch, state.loading])
 
   return (
     <>
@@ -86,7 +105,7 @@ const ConnectWallet: FunctionComponent = () => {
           background={'none'}
           border={'solid 2px #F9D85E'}
           rounded={'25px'}
-          onClick={() => { connectTo('extension') }}
+          onClick={() => { selector?.show(); }}
         >
         <Image src={Wallet} width={'15px'} />
           <Text ml={'11px'} color={'#F9D85E'}>
@@ -114,7 +133,9 @@ const ConnectWallet: FunctionComponent = () => {
                 <Spinner color={'#F9D85E'}/>
               }
               <Text ml={'15px'} color={'#F9D85E'}>
-                {shortenAddress(connectedWallet?.walletAddress.toString())}
+  
+                {/* {shortenAddress(connectedWallet?.walletAddress.toString())} */}
+                {shortenAddress(accountId?.toString())}
                 &nbsp;|&nbsp;
                 {100}&nbsp;NEAR
               </Text>

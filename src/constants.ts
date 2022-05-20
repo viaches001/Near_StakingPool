@@ -25,6 +25,7 @@ export const coins = [
     currency: 'USDC',
     name: 'usdc',
     blockchain: 'USD Coin',
+    id: 'usd-coin',
     stable: true,
     available: true
   },
@@ -33,6 +34,7 @@ export const coins = [
   //   currency: 'USDT',
   //   name: 'usdt',
   //   blockchain: 'USD Tether',
+  //   id: 'tether',
   //   stable: true,
   //   available: true
   // },
@@ -40,6 +42,7 @@ export const coins = [
   //   img: 'img/dai.svg',
   //   currency: 'DAI',
   //   name: 'dai',
+  //   id: 'dai',
   //   blockchain: 'Dai',
   //   stable: true,
   //   available: true
@@ -48,6 +51,7 @@ export const coins = [
   //   img: 'img/usn.svg',
   //   currency: 'USN',
   //   name: 'usn',
+  //   id: 'usn',
   //   blockchain: 'USD NEAR',
   //   stable: true,
   //   available: true
@@ -56,6 +60,7 @@ export const coins = [
   //   img: 'img/eth.svg',
   //   currency: 'ETH',
   //   name: 'eth',
+  //   id: 'ethereum',
   //   blockchain: 'Ethereum',
   //   stable: false,
   //   available: true
@@ -65,6 +70,7 @@ export const coins = [
   //   currency: 'wBTC',
   //   name: 'wbtc',
   //   blockchain: 'Wrapped Bitcoin',
+  //   id: 'wrapped-bitcoin',
   //   stable: false,
   //   available: true
   // },
@@ -72,6 +78,7 @@ export const coins = [
     img: 'img/wnear.svg',
     currency: 'wNEAR',
     name: 'wnear',
+    id: 'wrapped-near',
     blockchain: 'Wrapped Near',
     stable: false,
     available: true
