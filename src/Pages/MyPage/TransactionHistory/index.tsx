@@ -3,8 +3,9 @@ import { VStack, Stack, Text, Divider, HStack, Image, Flex, Button } from '@chak
 import {  useInfiniteQuery } from "react-query"
 import axios from "axios"
 
-import { useWallet, useNearAPIURL } from '../../../store';
+import { useNearAPIURL } from '../../../store';
 import HistoryItem from './HistoryItem';
+import { useWalletSelector } from '../../../context/NearWalletSelectorContext';
 
 export interface AccountHistory {
   limit: number
@@ -34,24 +35,25 @@ export interface CoinData {
 }
 
 const TransactionHistory: FunctionComponent = (props) => {
-  const wallet = useWallet();
+  // const selector = useNearSelector();
   const baseURL = useNearAPIURL();
+  const { accountId } = useWalletSelector();
   
   const fetchAccountHistory = useCallback(
     async ({ pageParam = 0 }) => {
       const { data } = await axios.get<AccountHistory>(
-        `tx-history/station/${wallet?.walletAddress}`,
+        `tx-history/station/${accountId}`,
         { baseURL, params: { offset: pageParam || undefined } }
       )
 
       return data
     },
-    [wallet?.walletAddress, baseURL]
+    [accountId, baseURL]
   )
   const { data, error, fetchNextPage, ...state } = useInfiniteQuery(
-    ['', "history", baseURL, wallet?.walletAddress],
+    ['', "history", baseURL, accountId],
     fetchAccountHistory,
-    { getNextPageParam: ({ next }) => next, enabled: !!(wallet?.walletAddress && baseURL) }
+    { getNextPageParam: ({ next }) => next, enabled: !!(accountId && baseURL) }
   )
   const getList = () => {
     if (!data) return []

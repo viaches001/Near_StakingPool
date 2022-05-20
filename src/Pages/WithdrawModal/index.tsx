@@ -22,7 +22,7 @@ import { useStore } from '../../store';
 
 interface Props{
   isOpen: boolean,
-  onClose: () => void,
+  onClose: () => void
 }
 const WithdrawModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
   const [amount, setAmount] = useState('0');

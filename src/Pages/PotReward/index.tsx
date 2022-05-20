@@ -1,10 +1,9 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Stack, VStack, Flex, Button } from '@chakra-ui/react'
-import { MsgExecuteContract, WasmAPI, Coin, LCDClient, Fee } from '@terra-money/terra.js'
+import { VStack } from '@chakra-ui/react'
 
 import { floorNormalize } from '../../Util';
 import { POOL } from '../../constants';
-import { useStore, useLCD } from '../../store';
+import { useStore, useNearSelector } from '../../store';
 import {
   Table,
   Thead,
@@ -16,29 +15,35 @@ import {
   TableCaption,
   TableContainer,
 } from '@chakra-ui/react'
+import { providers } from "near-api-js";
+import { CodeResult } from "near-api-js/lib/providers/provider";
 
 const PotReward: FunctionComponent = (props) => {
   const {state, dispatch} = useStore();
   const [potInfo, setPotInfo] = useState<any[]>();
-  const lcd = useLCD();
-  const api = new WasmAPI(lcd.apiRequester);
+  const selector = useNearSelector();
 
   useEffect( () => {
+    if(!selector) return;
+
+    const { nodeUrl } = selector.network;
+    const provider = new providers.JsonRpcProvider({ url: nodeUrl });
+
     const fetchData = async () => {
-      try {
-        let res: any[] = await api.contractQuery(
-          POOL,
-          {
-            get_all_pot_info: { }
-          });
+      // try {
+      //   let res: any[] = await api.contractQuery(
+      //     POOL,
+      //     {
+      //       get_all_pot_info: { }
+      //     });
         
-        setPotInfo(res);
-      } catch (e) {
-        console.log(e)
-      }
+      //   setPotInfo(res);
+      // } catch (e) {
+      //   console.log(e)
+      // }
     }
     fetchData();
-  }, [lcd])
+  }, [selector])
 
   return (
     <VStack 

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo } from 'react'
-import { QueryClient, QueryClientProvider, useInfiniteQuery } from "react-query"
+import { QueryClient, QueryClientProvider } from "react-query"
 import { Outlet, Link } from "react-router-dom";
-import { VStack, Flex, useDisclosure, useEventListenerMap } from '@chakra-ui/react'
-import { useLCD, useWallet, useNearAPIURL, useStore, useNetworkName, ActionKind } from './store';
+import { VStack, Flex, useDisclosure } from '@chakra-ui/react'
+import { useNearSelector, useStore, useNetworkName, ActionKind } from './store';
 
 import Navbar from './Pages/Navbar'
 import Footer from "./Pages/Footer";
@@ -20,8 +20,7 @@ const Layout = () => {
   const { isOpen: isOpenWaiting, onOpen: onOpenWaiting, onClose: onCloseWaiting } = useDisclosure();
 
   const { state, dispatch } = useStore();
-  const lcd = useLCD();
-  const wallet = useWallet();
+  const selector = useNearSelector();
 
   useEffect(() => {
     dispatch({ type: ActionKind.setOpenDepositModal, payload: onOpenDeposit });
@@ -34,9 +33,10 @@ const Layout = () => {
     const fetchAll = async () => {
       fetchData(state, dispatch)
     }
-    // if (checkNetwork(wallet, state))
+
+    if (checkNetwork(selector, state))
       fetchAll()
-  }, [lcd, wallet])
+  }, [selector])
 
   return (
     <QueryClientProvider client={queryClient} key={networkName}>

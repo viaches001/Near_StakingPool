@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Stack, Flex, HStack, Button, Text, Divider } from '@chakra-ui/react'
-import { Deposit, MsgExecuteContract, WasmAPI, Coin } from '@terra-money/terra.js'
 import {
   Modal,
   ModalOverlay,
@@ -12,13 +11,14 @@ import {
   GridItem
 } from '@chakra-ui/react'
 import { toast } from 'react-toastify';
-
 import InputPanel from './InputPanel';
 import SliderWish from './SliderWish';
 import Info from './Info';
-import { useStore, useWallet, useLCD, ActionKind } from '../../store';
+import { useStore, useNearSelector, ActionKind } from '../../store';
 import {estimateSend, fetchData, sleep} from '../../Util';
 import {POOL, successOption, coins} from '../../constants';
+import { utils } from "near-api-js";
+import { useWalletSelector } from '../../context/NearWalletSelectorContext';
 
 interface Props{
   isOpen: boolean,
@@ -26,52 +26,60 @@ interface Props{
 }
 const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
   const [amount, setAmount] = useState('0');
-  const wallet = useWallet();
-  const lcd = useLCD();
   const {state, dispatch} = useStore();
   const coinType = state.coinType;
   const coin = coins.find(item => item.name == coinType);
+  const selector = useNearSelector();
+  const { accountId } = useWalletSelector();
 
   const deposit = async () => {
-    if(parseFloat(amount) <= 0  || !wallet?.walletAddress)
+    if(parseFloat(amount) <= 0  || !accountId)
       return;
       
-    let val = Math.floor(parseFloat(amount) * 10 ** 6);
+    // let val = Math.floor(parseFloat(amount) * 10 ** 6);
+    let val = utils.format.parseNearAmount(amount || "0") || 0;
     let msg;
-    msg = { [`deposit_${coinType}`]: {qualified: state.qualified} }
+    msg = [{
+      methodName: "addMessage",
+      args: { text: 'sdfsdf' },
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      deposit: val,
+    }];
+    // msg = { [`deposit_${coinType}`]: {qualified: state.qualified} }
 
-    let deposit_msg = new MsgExecuteContract(
-      wallet?.walletAddress,
-      POOL,
-      msg,
-      {uusd: val}
-    );
-    let res = await estimateSend(wallet, lcd, [deposit_msg], "Success Deposit", "deposit");
+    // let deposit_msg = new MsgExecuteContract(
+    //   wallet?.walletAddress,
+    //   POOL,
+    //   msg,
+    //   {uusd: val}
+    // );
+    // let res = await estimateSend(wallet, lcd, [deposit_msg], "Success Deposit", "deposit");
+    let res = await estimateSend(state.coinType, selector, null, msg, (accountId || ''), "Success request withdraw", "request withdraw");
     if(res){
       dispatch({type: ActionKind.setTxhash, payload: res});
       onClose();
       if(state.openWaitingModal)
         state.openWaitingModal();
 
-      let count = 10;
-      let height = 0;
-      while (count > 0) {
-        await lcd.tx.txInfo(res)
-          // eslint-disable-next-line no-loop-func
-          .then((e) => {
-            if (e.height > 0) {
-              toast.dismiss();
-              toast("Success", successOption);
-              height = e.height;
-            }
-          })
-          .catch((e) => {})
+      // let count = 10;
+      // let height = 0;
+      // while (count > 0) {
+      //   await lcd.tx.txInfo(res)
+      //     // eslint-disable-next-line no-loop-func
+      //     .then((e) => {
+      //       if (e.height > 0) {
+      //         toast.dismiss();
+      //         toast("Success", successOption);
+      //         height = e.height;
+      //       }
+      //     })
+      //     .catch((e) => {})
 
-        if (height > 0) break;
+      //   if (height > 0) break;
 
-        await sleep(1000);
-        count--;
-      }
+      //   await sleep(1000);
+      //   count--;
+      // }
       
       if(state.closeWaitingModal)
         state.closeWaitingModal();

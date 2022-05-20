@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Stack, VStack, Flex, HStack, Button, Text, Divider, Image, Checkbox } from '@chakra-ui/react'
-import { Deposit, MsgExecuteContract, WasmAPI, Coin } from '@terra-money/terra.js'
 import axios from 'axios';
 import {
   Modal,
@@ -11,44 +10,54 @@ import {
 import {toast} from 'react-toastify'
 import {MdWarningAmber, MdInfoOutline} from 'react-icons/md'
 
-import { useStore, useWallet, useLCD, ActionKind } from '../../../store';
+import { useStore, useNearSelector, ActionKind } from '../../../store';
 import {estimateSend, fetchData, sleep} from '../../../Util';
 import { successOption, errorOption, REQUEST_ENDPOINT, VUST, VLUNA, MOTHER_WALLET } from '../../../constants';
 import CustomCheckbox from './CustomCheckbox';
+import { utils } from "near-api-js";
+import { useWalletSelector } from '../../../context/NearWalletSelectorContext';
 
 interface Props{
   isOpen: boolean,
   onClose: () => void,
   onCloseParent: () => void,
-  amount: string,
+  amount: string
 }
 const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onCloseParent}) => {
   const [checked, setChecked] = useState(false);
   const {state, dispatch} = useStore();
-  const wallet = useWallet();
-  const lcd = useLCD();
+  const selector = useNearSelector();
   const coinType = state.coinType;
+  const { accountId } = useWalletSelector();
 
   const withdraw = async () => {
-    if(checked == false || wallet == undefined)
+    if(checked == false || selector == undefined)
       return;
       
-    let val = Math.floor(parseFloat(amount) * 10 ** 6);
-    let withdraw_msg = new MsgExecuteContract(
-      wallet?.walletAddress,
-      coinType == 'usdc' ? VUST : VLUNA,
-      {
-        "increase_allowance": {
-            "spender": `${MOTHER_WALLET}`,
-            "amount": `${val}`,
-            "expires": {
-                "never": {}
-            }
-        }
-      },
-      {}
-    );
-    let res = await estimateSend(wallet, lcd, [withdraw_msg], "Success request withdraw", "request withdraw");
+    // let val = Math.floor(parseFloat(amount) * 10 ** 6);
+    // let withdraw_msg = new MsgExecuteContract(
+    //   account_id,
+    //   coinType == 'usdc' ? VUST : VLUNA,
+    //   {
+    //     "increase_allowance": {
+    //         "spender": `${MOTHER_WALLET}`,
+    //         "amount": `${val}`,
+    //         "expires": {
+    //             "never": {}
+    //         }
+    //     }
+    //   },
+    //   {}
+    // );
+    let val = utils.format.parseNearAmount(amount || "0") || 0;
+    let withdraw_msg = [{
+      methodName: "addMessage",
+      args: { text: 'sdfsdf' },
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      deposit: val,
+    }];
+
+    let res = await estimateSend(state.coinType, selector, null, withdraw_msg, (accountId || ''), "Success request withdraw", "request withdraw");
     if(res)
     {
       dispatch({type: ActionKind.setTxhash, payload: res});
@@ -58,28 +67,28 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
       if(state.openWaitingModal)
         state.openWaitingModal();
 
-      let count = 10;
-      let height = 0;
-      while (count > 0) {
-        await lcd.tx.txInfo(res)
-          // eslint-disable-next-line no-loop-func
-          .then((e) => {
-            if (e.height > 0) {
-              toast.dismiss();
-              toast("Success request withdraw", successOption);
-              height = e.height;
-            }
-          })
-          .catch((e) => {})
+      // let count = 10;
+      // let height = 0;
+      // while (count > 0) {
+      //   await lcd.tx.txInfo(res)
+      //     // eslint-disable-next-line no-loop-func
+      //     .then((e) => {
+      //       if (e.height > 0) {
+      //         toast.dismiss();
+      //         toast("Success request withdraw", successOption);
+      //         height = e.height;
+      //       }
+      //     })
+      //     .catch((e) => {})
 
-        if (height > 0) break;
+      //   if (height > 0) break;
 
-        await sleep(1000);
-        count--;
-      }
+      //   await sleep(1000);
+      //   count--;
+      // }
 
       var formData = new FormData()
-      formData.append('wallet', wallet.walletAddress.toString());
+      formData.append('wallet', (accountId || '').toString());
       formData.append('coinType', coinType)
       formData.append('amount', val.toString())
 

@@ -14,7 +14,7 @@ import theme from './theme';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { WalletSelectorContextProvider } from './context/WalletSelectorContext';
+import { WalletSelectorContextProvider } from './context/NearWalletSelectorContext';
 
 ReactDOM.hydrate(
   <React.StrictMode>
