@@ -27,53 +27,59 @@ export const coins = [
     blockchain: 'USD Coin',
     id: 'usd-coin',
     stable: true,
-    available: true
+    available: true,
+    system: 'ethereum'
   },
-  // {
-  //   img: 'img/usdt.svg',
-  //   currency: 'USDT',
-  //   name: 'usdt',
-  //   blockchain: 'USD Tether',
-  //   id: 'tether',
-  //   stable: true,
-  //   available: true
-  // },
-  // {
-  //   img: 'img/dai.svg',
-  //   currency: 'DAI',
-  //   name: 'dai',
-  //   id: 'dai',
-  //   blockchain: 'Dai',
-  //   stable: true,
-  //   available: true
-  // },
-  // {
-  //   img: 'img/usn.svg',
-  //   currency: 'USN',
-  //   name: 'usn',
-  //   id: 'usn',
-  //   blockchain: 'USD NEAR',
-  //   stable: true,
-  //   available: true
-  // },
-  // {
-  //   img: 'img/eth.svg',
-  //   currency: 'ETH',
-  //   name: 'eth',
-  //   id: 'ethereum',
-  //   blockchain: 'Ethereum',
-  //   stable: false,
-  //   available: true
-  // },
-  // {
-  //   img: 'img/wbtc.svg',
-  //   currency: 'wBTC',
-  //   name: 'wbtc',
-  //   blockchain: 'Wrapped Bitcoin',
-  //   id: 'wrapped-bitcoin',
-  //   stable: false,
-  //   available: true
-  // },
+  {
+    img: 'img/usdt.svg',
+    currency: 'USDT',
+    name: 'usdt',
+    blockchain: 'USD Tether',
+    id: 'tether',
+    stable: true,
+    available: true,
+    system: 'ethereum'
+  },
+  {
+    img: 'img/dai.svg',
+    currency: 'DAI',
+    name: 'dai',
+    id: 'dai',
+    blockchain: 'Dai',
+    stable: true,
+    available: true,
+    system: 'ethereum'
+  },
+  {
+    img: 'img/usn.svg',
+    currency: 'USN',
+    name: 'usn',
+    id: 'usn',
+    blockchain: 'USD NEAR',
+    stable: true,
+    available: true,
+    system: 'near'
+  },
+  {
+    img: 'img/eth.svg',
+    currency: 'ETH',
+    name: 'eth',
+    id: 'ethereum',
+    blockchain: 'Ethereum',
+    stable: false,
+    available: true,
+    system: 'ethereum'
+  },
+  {
+    img: 'img/wbtc.svg',
+    currency: 'wBTC',
+    name: 'wbtc',
+    blockchain: 'Wrapped Bitcoin',
+    id: 'wrapped-bitcoin',
+    stable: false,
+    available: true,
+    system: 'btc'
+  },
   {
     img: 'img/wnear.svg',
     currency: 'wNEAR',
@@ -81,16 +87,18 @@ export const coins = [
     id: 'wrapped-near',
     blockchain: 'Wrapped Near',
     stable: false,
-    available: true
+    available: true,
+    system: 'btc'
   },
-  // {
-  //   img: 'img/neart.svg',
-  //   currency: 'NEARt',
-  //   name: 'neart',
-  //   blockchain: 'NEARt Treasury(Coming Soon)',
-  //   stable: false,
-  //   available: false
-  // },
+  {
+    img: 'img/neart.svg',
+    currency: 'NEARt',
+    name: 'neart',
+    id: 'neart',
+    blockchain: 'NEARt Treasury(Coming Soon)',
+    stable: false,
+    available: false
+  },
 ];
 
 export const stableCoinCount = coins.filter(coin => coin.stable && coin.available).length;

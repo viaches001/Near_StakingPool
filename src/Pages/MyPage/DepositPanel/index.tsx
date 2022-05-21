@@ -13,6 +13,7 @@ import {
 } from '../../../store';
 import AnimationNumber from '../../Components/AnimationNumber';
 import { floor, floorNormalize } from '../../../Util';
+import { useConnectedCoin, useNearSelector } from '../../../store';
 
 interface Props {
   coin: any
@@ -28,6 +29,14 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
   const coinDeposited = useCoinDeposited() + floorNormalize(state.userInfoCoin[coin.name].reward_amount);
   const apr = aprs[coin.name];
   const amount = coinDeposited * rate;
+  const connectedCoin = useConnectedCoin();
+  const nearSelector = useNearSelector();
+
+  const connectWallet = (coin_system: string) => {
+    if(coin_system == 'near') {
+      nearSelector?.show();
+    }
+  }
 
   return (
     <VStack
@@ -132,7 +141,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
           h={'50px'}
           background={'#493C3C'}
           rounded={'25px'}
-          onClick={() => OpenDepositModal(state, dispatch, coin.name)}
+          onClick={!connectedCoin[coin.name]? () => connectWallet(coin.system): () => OpenDepositModal(state, dispatch, coin.name)}
         >
           <Text
             fontSize={'14px'}
@@ -140,7 +149,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
             lineHeight={'10.8px'}
             color={'white'}
           >
-            Deposit
+            {connectedCoin[coin.name]? 'Deposit': 'Connect Wallet'}
           </Text>
         </Button>
         <Button
@@ -149,7 +158,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
           background={'#212121'}
           rounded={'25px'}
           border={'solid 1px #CEBFBF'}
-          onClick={() => OpenWithdrawModal(state, dispatch, coin.name)}
+          onClick={!connectedCoin[coin.name]? () => connectWallet(coin.system): () => OpenWithdrawModal(state, dispatch, coin.name)}
         >
           <Text
             fontSize={'14px'}
@@ -157,7 +166,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
             lineHeight={'10px'}
             color={'#CEBFBF'}
           >
-            Withdraw
+             {connectedCoin[coin.name]? 'Withdraw': 'Connect Wallet'}
           </Text>
         </Button>
       </Stack>}

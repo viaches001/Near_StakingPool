@@ -252,28 +252,30 @@ export async function estimateSend(
   type: string,
   selector: NearWalletSelector | undefined,
   lcd: any,
-  msg: any,
-  account_id: string,
+  amount: any,
+  accountId: string | null,
   message: string,
   memo: string
 ) {
   if(!selector) 
     return undefined;
 
-  if (!account_id)
-    return undefined;
-
-  const BOATLOAD_OF_GAS = utils.format.parseNearAmount("0.00000000003")!;
-
   if(type == 'usn') {
+    const contractName = "passioneer3.testnet";
+    const val = utils.format.parseNearAmount(amount || "0") || 0;
+    const BOATLOAD_OF_GAS = utils.format.parseNearAmount("0.00000000003")!;
+
     selector
     .signAndSendTransaction({
-      signerId: account_id!,
+      receiverId: contractName,
       actions: [
         {
           type: "FunctionCall",
           params: {
-            ...msg,
+            methodName: "mint",
+            args: { amount: val, receiver_id: accountId },
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            deposit: utils.format.parseNearAmount("0")!,
             gas: BOATLOAD_OF_GAS
           }
         },
@@ -284,8 +286,8 @@ export async function estimateSend(
       // return e.result.txhash;
     })
     .catch((e) => {
+      console.dir(e);
       toast(e.message, errorOption);
-      console.log(e.message);
       return undefined;
     });
   }

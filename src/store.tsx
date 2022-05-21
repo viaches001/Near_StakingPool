@@ -33,7 +33,9 @@ export interface AppContextInterface {
   qualified: boolean,
   potInfo: any,
   connectedNear: Boolean,
-  nearSelector: NearWalletSelector | undefined
+  connectedEthereum: Boolean,
+  connectedBtc: Boolean,
+  nearSelector: NearWalletSelector | undefined,
 }
 
 const initialState: AppContextInterface = {
@@ -59,6 +61,8 @@ const initialState: AppContextInterface = {
   qualified: false,
   potInfo: potInfo,
   connectedNear: false,
+  connectedEthereum: false,
+  connectedBtc: false,
   nearSelector: undefined
 }
 
@@ -232,9 +236,20 @@ export const useExchangeRate = () => {
   return state.coinPrice;
 }
 
+export const useConnectedCoin = () => {
+  const {state} = useStore();
+  const res: any = {};
+
+  coins.forEach(coin => {
+    res[coin.name] = (coin.system == 'ethereum' && state.connectedEthereum) || 
+      (coin.system == 'btc' && state.connectedBtc) ||
+      (coin.system == 'near' && state.connectedNear)
+  })
+  return res;
+}
+
 export const OpenDepositModal = (state:AppContextInterface , dispatch: React.Dispatch<any>, type: COINTYPE) => {
   dispatch({type: ActionKind.setCoinType, payload: type});
-
   if(state.openDepositModal != undefined)
     state.openDepositModal()
 }
@@ -242,7 +257,6 @@ export const OpenDepositModal = (state:AppContextInterface , dispatch: React.Dis
 export const OpenWithdrawModal = (state:AppContextInterface , dispatch: React.Dispatch<any>, type: COINTYPE) => 
 {
   dispatch({type: ActionKind.setCoinType, payload: type});
-
   if(state.openWithdrawModal != undefined)
     state.openWithdrawModal()
 }

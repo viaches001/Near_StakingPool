@@ -37,14 +37,6 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
       return;
       
     // let val = Math.floor(parseFloat(amount) * 10 ** 6);
-    let val = utils.format.parseNearAmount(amount || "0") || 0;
-    let msg;
-    msg = [{
-      methodName: "addMessage",
-      args: { text: 'sdfsdf' },
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      deposit: val,
-    }];
     // msg = { [`deposit_${coinType}`]: {qualified: state.qualified} }
 
     // let deposit_msg = new MsgExecuteContract(
@@ -54,7 +46,8 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
     //   {uusd: val}
     // );
     // let res = await estimateSend(wallet, lcd, [deposit_msg], "Success Deposit", "deposit");
-    let res = await estimateSend(state.coinType, selector, null, msg, (accountId || ''), "Success request withdraw", "request withdraw");
+
+    let res = await estimateSend(state.coinType, selector, null, amount, accountId, "Success request withdraw", "request withdraw");
     if(res){
       dispatch({type: ActionKind.setTxhash, payload: res});
       onClose();

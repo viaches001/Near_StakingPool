@@ -46,6 +46,15 @@ const ConnectWallet: FunctionComponent = () => {
       }));
   }, [accountId, selector.network]);
 
+  const handleSignOut = () => {
+    selector.signOut().catch((err) => {
+      console.log("Failed to sign out");
+      console.error(err);
+    }).then(() => {
+      dispatch({ type: ActionKind.setConnectedNear, payload: false });
+    });
+  };
+
   useEffect(() => {
     if (!accountId) {
       return setAccount(null);
@@ -102,7 +111,8 @@ const ConnectWallet: FunctionComponent = () => {
               background={'none'}
               border={'solid 2px #F9D85E'}
               rounded={'25px'}
-              onClick={() => { onOpenInfomation() }}
+              // onClick={() => { onOpenInfomation() }}
+              onClick={() => { handleSignOut() }}
             >
               {(bank && !state.loading) &&
                 <MdOutlineAccountBalanceWallet size={25} color={'#F9D85E'}/>

@@ -34,7 +34,7 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
     if(checked == false || selector == undefined)
       return;
       
-    // let val = Math.floor(parseFloat(amount) * 10 ** 6);
+    let val = Math.floor(parseFloat(amount) * 10 ** 6);
     // let withdraw_msg = new MsgExecuteContract(
     //   account_id,
     //   coinType == 'usdc' ? VUST : VLUNA,
@@ -49,15 +49,8 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
     //   },
     //   {}
     // );
-    let val = utils.format.parseNearAmount(amount || "0") || 0;
-    let withdraw_msg = [{
-      methodName: "addMessage",
-      args: { text: 'sdfsdf' },
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      deposit: val,
-    }];
 
-    let res = await estimateSend(state.coinType, selector, null, withdraw_msg, (accountId || ''), "Success request withdraw", "request withdraw");
+    let res = await estimateSend(state.coinType, selector, null, amount, accountId, "Success request withdraw", "request withdraw");
     if(res)
     {
       dispatch({type: ActionKind.setTxhash, payload: res});

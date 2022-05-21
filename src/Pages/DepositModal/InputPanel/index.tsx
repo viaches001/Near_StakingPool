@@ -11,7 +11,7 @@ interface Props {
 const InputPanel: FunctionComponent<Props> = (props) => {
   const {state, dispatch} = useStore();
   const coinBalances = useCoinBalance();
-
+  
   const maxBalance = () => {
     props.setAmount(coinBalances[props.coin.name].toString());
   }
@@ -65,7 +65,7 @@ const InputPanel: FunctionComponent<Props> = (props) => {
           cursor={'pointer'}
           onClick={() => maxBalance()}
         >
-          MAX: {maxBalance()} {props.coin.currency}
+          MAX: {coinBalances[props.coin.name]} {props.coin.currency}
         </Text>
       </Flex>
     </VStack>
