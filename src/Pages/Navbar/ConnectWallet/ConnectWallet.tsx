@@ -9,10 +9,10 @@ import {MdOutlineAccountBalanceWallet} from 'react-icons/md'
 import Wallet from './../../../assets/Wallet.svg';
 import { useStore, ActionKind, useCoinBalance } from '../../../store';
 import { shortenAddress, floorNormalize } from '../../../Util';
-import * as nearAPI from "near-api-js";
 import { useWalletSelector } from '../../../context/NearWalletSelectorContext';
-import { AccountView } from "near-api-js/lib/providers/provider";
+import { AccountView, CodeResult } from "near-api-js/lib/providers/provider";
 import { providers, utils } from "near-api-js";
+import { coins } from '../../../constants'; 
 
 type Account = AccountView & {
   account_id: string
@@ -21,19 +21,18 @@ type Account = AccountView & {
 const ConnectWallet: FunctionComponent = () => {
   const { state, dispatch } = useStore();
   const [bank, setBank] = useState(false);
-  const { isOpen: isOpenInfomation, onOpen: onOpenInfomation, onClose: onCloseInfomation } = useDisclosure();
+  // const { isOpen: isOpenInfomation, onOpen: onOpenInfomation, onClose: onCloseInfomation } = useDisclosure();
   const { selector, accounts, accountId, setAccountId } = useWalletSelector();
   const [account, setAccount] = useState<Account | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const { nodeUrl } = selector.network;
+  const provider = new providers.JsonRpcProvider({ url: nodeUrl });
 
   const getAccount = useCallback(async (): Promise<Account | null> => {
     if (!accountId) {
       return null;
     }
-
-    const { nodeUrl } = selector.network;
-    const provider = new providers.JsonRpcProvider({ url: nodeUrl });
-
+    
     return provider
       .query<AccountView>({
         request_type: "view_account",
@@ -56,6 +55,25 @@ const ConnectWallet: FunctionComponent = () => {
   };
 
   useEffect(() => {
+    async function getBalances() {
+      try {
+        for(const coin of coins.filter(coin => coin.available)) {
+          const res = await provider
+          .query<CodeResult>({
+            request_type: "call_function",
+            account_id: coin.testnet_address,
+            method_name: "ft_balance_of",
+            args_base64: btoa(JSON.stringify({account_id: accountId})),
+            finality: "optimistic",
+          })
+          
+          const amount = JSON.parse(Buffer.from(res.result).toString());
+          dispatch({type: ActionKind.setUCoinBalance, payload: { type: coin.name, data: coin.floorNormalize(amount)}});
+        }
+      }
+      catch(e) {console.log(e)}
+    }
+
     if (!accountId) {
       return setAccount(null);
     }
@@ -77,6 +95,8 @@ const ConnectWallet: FunctionComponent = () => {
 
       dispatch({ type: ActionKind.setConnectedNear, payload: true });
       dispatch({ type: ActionKind.setNearSelector, payload: selector });
+
+      getBalances();
     });
 
   }, [accountId, getAccount, dispatch]);

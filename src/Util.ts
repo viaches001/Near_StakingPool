@@ -77,7 +77,6 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
       finality: "optimistic",
     });
     status = JSON.parse(Buffer.from(res.result).toString());
-    console.log(status)
   } catch (e) { }
 
   if (status) {

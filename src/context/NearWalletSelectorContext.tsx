@@ -3,6 +3,7 @@ import NearWalletSelector, { AccountInfo } from "@near-wallet-selector/core";
 import { setupNearWallet } from "@near-wallet-selector/near-wallet";
 import { setupSender } from "@near-wallet-selector/sender";
 import { nearWalletIcon, senderWalletIcon } from './icons';
+import { POOL } from '../constants';
 
 interface WalletSelectorContextValue {
   selector: NearWalletSelector;
@@ -46,7 +47,7 @@ export const WalletSelectorContextProvider: React.FC = ({ children }) => {
   useEffect(() => {
     NearWalletSelector.init({
       network: "testnet",
-      contractId: "guest-book.testnet",
+      contractId: POOL,
       wallets: [
         setupNearWallet({ iconUrl: nearWalletIcon }),
         setupSender({ iconUrl: senderWalletIcon }),
