@@ -19,8 +19,6 @@ interface Props {
   coin: any
 }
 
-declare let window: any;
-
 const DepositPanel: FunctionComponent<Props> = (props) => {
   const { state, dispatch } = useStore();
   const aprs = useCoinApr();
@@ -137,7 +135,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
           h={'50px'}
           background={'#493C3C'}
           rounded={'25px'}
-          onClick={!connectedCoin[coin.name]? async () => (await connectWallet)(coin.system): () => OpenDepositModal(state, dispatch, coin.name)}
+          onClick={!connectedCoin[coin.name]? connectWallet: () => OpenDepositModal(state, dispatch, coin.name)}
         >
           <Text
             fontSize={'14px'}
@@ -154,7 +152,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
           background={'#212121'}
           rounded={'25px'}
           border={'solid 1px #CEBFBF'}
-          onClick={!connectedCoin[coin.name]? async () => (await connectWallet)(coin.system): () => OpenWithdrawModal(state, dispatch, coin.name)}
+          onClick={!connectedCoin[coin.name]? connectWallet: () => OpenWithdrawModal(state, dispatch, coin.name)}
         >
           <Text
             fontSize={'14px'}

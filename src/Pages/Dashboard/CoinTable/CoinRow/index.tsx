@@ -89,7 +89,7 @@ const CoinRow: FunctionComponent<Props> = ({rates, coinApr, coin, history, last}
 						w={{ sm: '90%', md: '90%', lg: '46%' }}
 						background={'#493C3C'} 
 						rounded={'25px'}
-						onClick={!connectedCoin[coin.name]? async () => (await connectWallet)(coin.system): () => OpenDepositModal(state, dispatch, coin.name)}
+						onClick={!connectedCoin[coin.name]? connectWallet: () => OpenDepositModal(state, dispatch, coin.name)}
 					>
 						<Text
 							fontSize={'11px'}
@@ -105,7 +105,7 @@ const CoinRow: FunctionComponent<Props> = ({rates, coinApr, coin, history, last}
 						// background={'#493C3C'} 
 						rounded={'25px'}
 						variant='outline'
-						onClick={!connectedCoin[coin.name]? async () => (await connectWallet)(coin.system): () => OpenWithdrawModal(state, dispatch, coin.name)}
+						onClick={!connectedCoin[coin.name]? connectWallet: () => OpenWithdrawModal(state, dispatch, coin.name)}
 					>
 						<Text
 							fontSize={'11px'}

@@ -2,10 +2,6 @@ import React, { createContext, useContext, useReducer } from 'react'
 import { floor, floorNormalize } from './Util'
 import { amountHistory, aprHistory, userInfo, farmInfo, potInfo, coins, uCoinBalance, coinPrice } from './constants'
 import NearWalletSelector from "@near-wallet-selector/core";
-import { Signer } from 'ethers';
-import { toast } from 'react-toastify';
-import { ethers } from "ethers";
-import { errorOption } from './constants';
 
 export type COINTYPE = 'usdc' | 'usdt' | 'dai' | 'usn' | 'wbtc' | 'eth' | 'wnear' | 'neart';
 
@@ -39,10 +35,7 @@ export interface AppContextInterface {
   qualified: boolean,
   potInfo: any,
   connectedNear: Boolean,
-  connectedEthereum: Boolean,
-  connectedAurora: Boolean,
   nearSelector: NearWalletSelector | undefined,
-  ethereumSigner: Signer | undefined,
 }
 
 const initialState: AppContextInterface = {
@@ -68,10 +61,7 @@ const initialState: AppContextInterface = {
   qualified: false,
   potInfo: potInfo,
   connectedNear: false,
-  connectedEthereum: false,
-  connectedAurora: false,
   nearSelector: undefined,
-  ethereumSigner: undefined
 }
 
 export enum ActionKind{
@@ -98,10 +88,7 @@ export enum ActionKind{
   setQualified,
   setPotInfo,
   setConnectedNear,
-  setConnectedEthereum,
-  setConnectedAurora,
   setNearSelector,
-  setEthereumSigner
 }
 
 const StoreContext = createContext<{ state: AppContextInterface; dispatch: React.Dispatch<any>; }>
@@ -156,14 +143,8 @@ export const reducer = (state: AppContextInterface,  action: Action ) => {
       return {...state, potInfo: action.payload}
     case ActionKind.setConnectedNear:
       return {...state, connectedNear: action.payload}
-    case ActionKind.setConnectedEthereum:
-      return {...state, connectedEthereum: action.payload}
-    case ActionKind.setConnectedAurora:
-      return {...state, connectedAurora: action.payload}
     case ActionKind.setNearSelector:
       return {...state, nearSelector: action.payload}
-    case ActionKind.setEthereumSigner:
-      return {...state, ethereumSigner: action.payload}
     default:
       return state
   }
@@ -195,11 +176,6 @@ export const useStore = () => useContext(StoreContext)
 export const useNearSelector = () => {
   const {state, dispatch} = useStore();
   return state.nearSelector;
-}
-
-export const useEthereumSigner = () => {
-  const {state, dispatch} = useStore();
-  return state.ethereumSigner;
 }
 
 export const useNearAPIURL = () => {
@@ -268,49 +244,11 @@ export const useConnectedCoin = () => {
   return res;
 }
 
-const logoutMetamask = async () => {
-  await window.ethereum.request({
-    method: "eth_requestAccounts",
-    params: [
-      {
-        eth_accounts: {}
-      }
-    ]
-  });
-  await window.ethereum.request({
-    method: "wallet_requestPermissions",
-    params: [
-      {
-        eth_accounts: {}
-      }
-    ]
-  });
-}
-
-export const useConnectWallet = async () => {
+export const useConnectWallet = () => {
   const {state, dispatch} = useStore();
   const nearSelector = useNearSelector();
-  return async (coinSystem: string) => {
-    if(coinSystem == 'Near') {
-      nearSelector?.show();
-    }
-    else if(coinSystem == 'Ethereum') {
-      if (!window.ethereum) {
-        toast("No crypto wallet found. Please install it.", errorOption);
-      }
-  
-      await logoutMetamask();
-    
-      await window.ethereum.send("eth_requestAccounts");
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-  
-      dispatch({ type: ActionKind.setConnectedEthereum, payload: true });
-      dispatch({ type: ActionKind.setEthereumSigner, payload: signer });
-    }
-    else if(coinSystem == 'Aurora') {
-      
-    }
+  return () => {
+    nearSelector?.show();
   }
 }
 
