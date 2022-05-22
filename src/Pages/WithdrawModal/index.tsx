@@ -39,7 +39,7 @@ const WithdrawModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
         rounded={'25px'}
         w={{sm:'80%', md: '562px', lg:'562px'}}
         minW={{sm:'80%', md: '562px', lg:'562px'}}
-        h={'453px'}
+        h={'512px'}
         px={{sm:'10px', md: '47px', lg: '47px'}}
         py={'39px'}
       >
@@ -65,7 +65,7 @@ const WithdrawModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
                 h={'100%'}
                 align={'center'}
                 justify={'left'}
-                display={{ sm: 'none', md: 'none', lg: 'flex' }}
+                display={'flex'}
               >
                 <Image 
                   borderRadius='full'
@@ -104,6 +104,7 @@ const WithdrawModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
           w={'100%'} 
           h={'45px'} 
           mt={'26px'} 
+          color={'#CEC0C0'}
           background={'#493C3C'} 
           rounded={'25px'}
           onClick={() => {

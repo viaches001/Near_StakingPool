@@ -19,7 +19,8 @@ const MyPage: FunctionComponent = (props) => {
       <Title />
       <Total />
       <Grid
-        templateColumns='repeat(2, 1fr)' gap={6}
+        templateColumns={{sm: 'repeat(1, 1fr)' , md:'repeat(1, 1fr)' , lg:'repeat(2, 1fr)' }}
+        gap={6}
         w={'100%'}
       >
         {coins.map(coin => <GridItem key={coin.blockchain}>

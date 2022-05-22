@@ -86,7 +86,8 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
         background={'#212121'}
         rounded={'25px'}
         w={{sm:'100%', md: '562px', lg:'562px'}}
-        h={'453px'}
+        minW={{sm:'80%', md: '562px', lg:'562px'}}
+        h={'512px'}
         px={{sm:'10px', md: '47px', lg: '47px'}}
         py={'39px'}
       >
@@ -112,7 +113,7 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
                 h={'100%'}
                 align={'center'}
                 justify={'left'}
-                display={{ sm: 'none', md: 'none', lg: 'flex' }}
+                display={'flex'}
               >
                 <Image 
                   borderRadius='full'
@@ -153,6 +154,7 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
           mt={'26px'} 
           background={'#493C3C'} 
           rounded={'25px'}
+          color={'#CEC0C0'}
           onClick={() => deposit()}
         >
           <Text

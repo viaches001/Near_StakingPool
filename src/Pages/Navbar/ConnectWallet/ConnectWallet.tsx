@@ -7,7 +7,7 @@ import {
 import { toast } from 'react-toastify';
 import {MdOutlineAccountBalanceWallet} from 'react-icons/md'
 import Wallet from './../../../assets/Wallet.svg';
-import { useStore, ActionKind, useCoinBalance } from '../../../store';
+import { useStore, ActionKind } from '../../../store';
 import { shortenAddress, floorNormalize } from '../../../Util';
 import { useWalletSelector } from '../../../context/NearWalletSelectorContext';
 import { AccountView, CodeResult } from "near-api-js/lib/providers/provider";

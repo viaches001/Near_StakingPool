@@ -1,7 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { VStack, HStack, Stack, Flex, Text, Input, Link, Center, Divider, Button, useBoolean } from '@chakra-ui/react'
+import { VStack, HStack, Stack, Flex, Text, Input, Box, Center, Icon, Button, useBoolean } from '@chakra-ui/react'
 import { Dispatch, SetStateAction } from "react";
 import { useCoinBalance, COINTYPE, useStore, ActionKind } from '../../../store'
+import { MdSettingsBackupRestore } from "react-icons/md";
+import { providers } from "near-api-js";
+import { CodeResult } from "near-api-js/lib/providers/provider";
+import { coins } from '../../../constants';
 
 interface Props {
   amount: string,
@@ -15,6 +19,29 @@ const InputPanel: FunctionComponent<Props> = (props) => {
   const maxBalance = () => {
     props.setAmount(coinBalances[props.coin.name].toString());
   }
+
+  async function getBalances() {
+    const nodeUrl = state.nearSelector?.network?.nodeUrl || '';
+    const provider = new providers.JsonRpcProvider({ url: nodeUrl });
+
+    try {
+      for(const coin of coins.filter((item: any) => item.available)) {
+        const res = await provider
+        .query<CodeResult>({
+          request_type: "call_function",
+          account_id: coin.testnet_address,
+          method_name: "ft_balance_of",
+          args_base64: btoa(JSON.stringify({account_id: localStorage.getItem('accountId')})),
+          finality: "optimistic",
+        })
+        
+        const amount = JSON.parse(Buffer.from(res.result).toString());
+        dispatch({type: ActionKind.setUCoinBalance, payload: { type: coin.name, data: coin.floorNormalize(amount)}});
+      }
+    }
+    catch(e) {console.log(e)}
+  }
+  
   return (
     <VStack w={'100%'} spacing={'6px'}>
       <Flex
@@ -67,6 +94,29 @@ const InputPanel: FunctionComponent<Props> = (props) => {
         >
           MAX: {coinBalances[props.coin.name]} {props.coin.currency}
         </Text>
+      </Flex>
+      <Flex
+        justify={'flex-end'}
+        w={'100%'}
+      >
+        <Button 
+          w={'120px'} 
+          h={'22px'} 
+          mt={'3px'} 
+          background={'#493C3C'} 
+          rounded={'5px'}
+          onClick={() => getBalances()}
+        >
+          <Icon as={MdSettingsBackupRestore} color={'#CEC0C0'} />
+          <Text
+            fontSize={'12px'}
+            fontWeight={'360'}
+            lineHeight={'15px'}      
+            color={'#CEC0C0'}
+          >
+            Update Balance
+          </Text>
+        </Button>
       </Flex>
     </VStack>
   );

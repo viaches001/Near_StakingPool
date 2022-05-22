@@ -26,9 +26,9 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
   const coin = props.coin;
   const rate = rates[coin.name];
   
-  const coinDeposited = useCoinDeposited() + floorNormalize(state.userInfoCoin[coin.name].reward_amount);
-  const apr = aprs[coin.name];
-  const amount = coinDeposited * rate;
+  const coinDeposited = (useCoinDeposited()[coin.name] + floorNormalize(state.userInfoCoin[coin.name].reward_amount)) || 0;
+  const apr = floor(aprs[coin.name]);
+  const amount = coinDeposited * rate || 0;
   const connectedCoin = useConnectedCoin();
   const connectWallet = useConnectWallet();
 
@@ -55,7 +55,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
             spacing={'27px'}
             align={'center'}
             justify={'left'}
-            display={{ sm: 'none', md: 'none', lg: 'flex' }}
+            display={'flex'}
           >
             <Image 
               borderRadius='full'
@@ -84,7 +84,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
           </HStack>
         </GridItem>
         <GridItem w={'100%'} h={'100px'}>
-          <VStack w={'100%'} h={'100%'} align={'center'} justify={'center'} >
+          <VStack w={'100%'} h={'100%'} align={'left'} justify={'center'} >
             <Text
               fontSize={'13px'}
               fontWeight={'400'}
@@ -99,7 +99,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
             >
               {coinDeposited == 0? '000,000.00': <AnimationNumber value={coinDeposited}/>}&nbsp;{coin.currency}
               <br></br>
-              ${amount == 0? '000,000.00': <AnimationNumber value={amount}/>}&nbsp;USD&nbsp;value
+              ${amount == 0? '000,000.00': <AnimationNumber value={amount}/>}&nbsp;USD&nbsp;Value
             </Text>
           </VStack>
         </GridItem>
