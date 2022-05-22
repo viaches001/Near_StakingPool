@@ -14,8 +14,8 @@ import { toast } from 'react-toastify';
 import InputPanel from './InputPanel';
 import SliderWish from './SliderWish';
 import Info from './Info';
-import { useStore, useNearSelector, ActionKind } from '../../store';
-import {estimateSend, fetchData, sleep} from '../../Util';
+import { useStore, useNearSelector, useEthereumSigner, ActionKind } from '../../store';
+import { estimateSend, fetchData, sleep } from '../../Util';
 import {POOL, successOption, coins} from '../../constants';
 import { utils } from "near-api-js";
 import { useWalletSelector } from '../../context/NearWalletSelectorContext';
@@ -29,7 +29,8 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
   const {state, dispatch} = useStore();
   const coinType = state.coinType;
   const coin = coins.find(item => item.name == coinType);
-  const selector = useNearSelector();
+  const nearSelector = useNearSelector();
+  const ethereumSigner = useEthereumSigner();
   const { accountId } = useWalletSelector();
 
   const deposit = async () => {
@@ -46,6 +47,15 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
     //   {uusd: val}
     // );
     // let res = await estimateSend(wallet, lcd, [deposit_msg], "Success Deposit", "deposit");
+
+    let selector;
+    if(coin?.system == 'Near') {
+      selector = nearSelector;
+    }
+    else if(coin?.system == 'Ethereum') {
+      selector = ethereumSigner;
+    }
+    console.log(coin?.system)
 
     let res = await estimateSend(state.coinType, selector, null, amount, accountId, "Success request withdraw", "request withdraw");
     if(res){

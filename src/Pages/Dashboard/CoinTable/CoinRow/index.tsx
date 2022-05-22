@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Stack, Text, Image, Button, Tr, Td } from '@chakra-ui/react'
+import { Stack, HStack, VStack, Text, Image, Button, Tr, Td } from '@chakra-ui/react'
 import {
   OpenDepositModal,
   OpenWithdrawModal,
@@ -10,11 +10,11 @@ import AnimationNumber from '../../../Components/AnimationNumber';
 import { floor, floorNormalize } from '../../../../Util';
 
 interface Props {
-    rates: any,
-    coin: any,
-    history: any,
-    last: number,
-    coinApr: any
+	rates: any,
+	coin: any,
+	history: any,
+	last: number,
+	coinApr: any
 }
 
 const CoinRow: FunctionComponent<Props> = ({rates, coinApr, coin, history, last}) => {
@@ -25,97 +25,93 @@ const CoinRow: FunctionComponent<Props> = ({rates, coinApr, coin, history, last}
   const usd_amount = amount * rate;
 
   return (
-    <Tr>
-        <Td>
-            <Stack 
-            direction={{sm:'row', md:'row', lg:'row'}}
-            w={'100%'}
-            align={'left'}
-            spacing={'2px'}
-            >
+    	<Tr>
+        <Td display={{ sm: 'none', md: 'none', lg: 'table-cell' }}>
+					<HStack 
+						direction={{sm:'row', md:'row', lg:'row'}}
+						w={'100%'}
+						align={'left'}
+						spacing={'2px'}
+					>
             <Image
-                borderRadius='full'
-                boxSize='36px'
-                src={coin.img}
-                alt='Dan Abramov'
-                mt={'10px'}
+							borderRadius='full'
+							boxSize='36px'
+							src={coin.img}
+							alt='Dan Abramov'
+							mt={'5px'}
             />
-            <Stack 
-                direction={{sm:'column', md:'column', lg:'column'}}
-                align={'center'}
-                justifyContent={'center'}
-                display={{ sm: 'none', md: 'none', lg: 'flex' }}
+            <VStack 
+							align={'left'}
+					
             >
-                <Text
-                fontSize={'18px'}
-                fontWeight={'800'}
-                color={'rgb(228, 228, 228)'}
-                className={'currencyText'}
-                >
-                {coin.currency}
-                </Text>
-                <Text
-                fontSize={'13px'}
-                fontWeight={'400'}
-                className={'chainText'}
-                >
-                {coin.blockchain}
-                </Text>
-            </Stack>
-            </Stack>
+							<Text
+								fontSize={'18px'}
+								fontWeight={'800'}
+								color={'rgb(228, 228, 228)'}
+								className={'currencyText'}
+								textAlign={'left'}
+							>
+								{coin.currency}
+							</Text>
+							<Text
+								fontSize={'13px'}
+								fontWeight={'400'}
+								className={'chainText'}
+								textAlign={'left'}
+							>
+								{coin.blockchain}
+							</Text>
+            </VStack>
+          </HStack>
         </Td>
         <Td>{coinApr[coin.name]}%</Td>
         <Td>
-            <Text
-            fontWeight={'800'}
-            >
-            <AnimationNumber value={amount}/>&nbsp;{coin.currency}
-            </Text>
-            <Text
-            fontWeight={'400'}
-            >
-            $<AnimationNumber value={usd_amount}/>&nbsp;USD Value
-            </Text>
+					<Text fontWeight={'800'}>
+						<AnimationNumber value={amount}/>&nbsp;{coin.currency}
+					</Text>
+					<Text fontWeight={'400'}>
+						$<AnimationNumber value={usd_amount}/>&nbsp;USD Value
+					</Text>
         </Td>
         <Td>
-            <Stack 
-            direction={{sm:'column', md:'row', lg:'row'}}
-            w={'100%'}
-            align={'center'}
-            spacing={'10px'}
-            justifyContent={'space-between'}
-            >
+					<Stack 
+						direction={{sm:'column', md:'row', lg:'row'}}
+						w={'100%'}
+						align={'center'}
+						spacing={'10px'}
+						justifyContent={'space-between'}
+					>
             <Button 
-                h={'45px'} 
-                w={'46%'}
-                background={'#493C3C'} 
-                rounded={'25px'}
-                onClick={() => OpenDepositModal(state, dispatch, coin.name as COINTYPE)}
+							h={'45px'} 
+							w={{ sm: '90%', md: '90%', lg: '46%' }}
+							background={'#493C3C'} 
+							rounded={'25px'}
+							onClick={() => OpenDepositModal(state, dispatch, coin.name as COINTYPE)}
             >
-                <Text
-                    fontSize={'11px'}
-                    fontWeight={'800'}
-                    lineHeight={'15px'}
-                >
-                    Deposit
-                </Text>
+							<Text
+								fontSize={'11px'}
+								fontWeight={'800'}
+								lineHeight={'15px'}
+							>
+								Deposit
+							</Text>
             </Button>
             <Button 
-                h={'45px'} 
-                w={'46%'}
-                // background={'#493C3C'} 
-                rounded={'25px'}
-                variant='outline'
-                onClick={() => OpenWithdrawModal(state, dispatch, coin.name as COINTYPE)}
+							h={'45px'} 
+							w={{ sm: '90%', md: '90%', lg: '46%' }}
+							// background={'#493C3C'} 
+							rounded={'25px'}
+							variant='outline'
+							onClick={() => OpenWithdrawModal(state, dispatch, coin.name as COINTYPE)}
             >
-                <Text
-                    fontSize={'11px'}
-                    fontWeight={'800'}
-                >
-                    Withdraw
-                </Text>
+							<Text
+								fontSize={'11px'}
+								fontWeight={'800'}
+							>
+								Withdraw
+							</Text>
             </Button>
-            </Stack>
+          </Stack>
         </Td>
     </Tr>
   );

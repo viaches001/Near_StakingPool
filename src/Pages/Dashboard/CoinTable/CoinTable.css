@@ -15,9 +15,11 @@ td {
 }
 
 .currencyText {
-  margin-top: 0.2rem!important;
+  margin-top: 0.3rem!important;
+  margin-left: 10px;
 }
 
 .chainText {
-  margin-top: -0.3rem!important;
+  margin-top: -0.4rem!important;
+  margin-left: 10px!important;
 }

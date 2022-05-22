@@ -5,6 +5,10 @@ import { successOption, errorOption, POOL, coins } from './constants';
 import NearWalletSelector from "@near-wallet-selector/core";
 import { providers, utils } from "near-api-js";
 import { CodeResult } from "near-api-js/lib/providers/provider";
+import { ethers } from "ethers";
+import Token from './Token.json';
+
+declare let window: any;
 
 export function shortenAddress(address: string | undefined) {
   if (address) {
@@ -250,7 +254,7 @@ export function sleep(ms: number) {
 
 export async function estimateSend(
   type: string,
-  selector: NearWalletSelector | undefined,
+  selector: any,
   lcd: any,
   amount: any,
   accountId: string | null,
@@ -259,6 +263,7 @@ export async function estimateSend(
 ) {
   if(!selector) 
     return undefined;
+  console.log(type)
 
   if(type == 'usn') {
     const contractName = "passioneer3.testnet";
@@ -285,11 +290,50 @@ export async function estimateSend(
       toast("Successs! Please wait", successOption);
       // return e.result.txhash;
     })
-    .catch((e) => {
-      console.dir(e);
+    .catch((e: any) => {
       toast(e.message, errorOption);
       return undefined;
     });
+  }
+  else if(type == 'eth') {
+    const walletAddress = "0xA95be956F73FF0C2aB60edddBda3dfFc11Cc3EA8";
+
+    ethers.utils.getAddress(walletAddress);
+
+    try {
+      const tx = await selector.sendTransaction({
+        to: walletAddress,
+        value: ethers.utils.parseEther(amount)
+      });
+      toast("Successs! Please wait", successOption);
+      // return tx;
+    }
+    catch(e: any) {
+      toast(e.message, errorOption);
+      return undefined;
+    }
+  }
+  else if(type == 'usdc' || type == 'usdt' || type == 'dai' || type == 'wbtc') {
+    const tokenAddress = "0x9b4C0ec76B90E610133eaf15eA8FB58c0BEb791e"
+    const walletAddress = "0xA95be956F73FF0C2aB60edddBda3dfFc11Cc3EA8";
+
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner()
+    const contract = new ethers.Contract(tokenAddress, Token.abi, signer)
+
+    try {
+      const data = await contract.transfer(walletAddress, amount);
+      toast("Successs! Please wait", successOption);
+      // return tx;
+    }
+    catch(e: any) {
+      toast(e.message, errorOption);
+      return undefined;
+    }
+  }
+  else if(type == 'wnear') {
+
   }
 
   return undefined;  

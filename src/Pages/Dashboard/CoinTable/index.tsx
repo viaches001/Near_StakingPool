@@ -53,7 +53,7 @@ const CoinTable: FunctionComponent = () => {
         <Table variant='simple' size='lg'>
           <Thead>
             <Tr>
-              <Th w={'20%'}>Name</Th>
+              <Th w={'20%'} display={{ sm: 'none', md: 'none', lg: 'table-cell' }}>Name</Th>
               <Th w={'10%'}>
                 <Tooltip
                   label="Current annualized deposit rate"
@@ -90,7 +90,7 @@ const CoinTable: FunctionComponent = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {coins.map(coin => (
+            {coins.filter(coin => coin.available).map(coin => (
               <CoinRow 
                 rates={rates} 
                 coin={coin}

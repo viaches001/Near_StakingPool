@@ -28,7 +28,7 @@ export const coins = [
     id: 'usd-coin',
     stable: true,
     available: true,
-    system: 'ethereum'
+    system: 'Ethereum'
   },
   {
     img: 'img/usdt.svg',
@@ -38,7 +38,7 @@ export const coins = [
     id: 'tether',
     stable: true,
     available: true,
-    system: 'ethereum'
+    system: 'Ethereum'
   },
   {
     img: 'img/dai.svg',
@@ -48,7 +48,7 @@ export const coins = [
     blockchain: 'Dai',
     stable: true,
     available: true,
-    system: 'ethereum'
+    system: 'Ethereum'
   },
   {
     img: 'img/usn.svg',
@@ -58,7 +58,7 @@ export const coins = [
     blockchain: 'USD NEAR',
     stable: true,
     available: true,
-    system: 'near'
+    system: 'Near'
   },
   {
     img: 'img/eth.svg',
@@ -68,7 +68,7 @@ export const coins = [
     blockchain: 'Ethereum',
     stable: false,
     available: true,
-    system: 'ethereum'
+    system: 'Ethereum'
   },
   {
     img: 'img/wbtc.svg',
@@ -78,7 +78,7 @@ export const coins = [
     id: 'wrapped-bitcoin',
     stable: false,
     available: true,
-    system: 'btc'
+    system: 'Ethereum'
   },
   {
     img: 'img/wnear.svg',
@@ -88,7 +88,7 @@ export const coins = [
     blockchain: 'Wrapped Near',
     stable: false,
     available: true,
-    system: 'btc'
+    system: 'Aurora'
   },
   {
     img: 'img/neart.svg',

@@ -58,7 +58,8 @@ const Total: FunctionComponent = (props) => {
           </Text>
         </HStack>
       </VStack>
-      <a href="https://app.terraswap.io/swap?to=&type=swap&from=uluna" target={'_blank'} rel="noreferrer">
+      {/* <a href="https://app.terraswap.io/swap?to=&type=swap&from=uluna" target={'_blank'} rel="noreferrer"> */}
+      <a href="https://app.ref.finance/" target={'_blank'} rel="noreferrer">
         <Button w={'92px'} h={'25px'} background={'none'} rounded={'25px'} borderColor={'white'} variant='outline'>
           <MdSwapHoriz />
           <Text

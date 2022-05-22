@@ -13,11 +13,16 @@ import {
 } from '../../../store';
 import AnimationNumber from '../../Components/AnimationNumber';
 import { floor, floorNormalize } from '../../../Util';
-import { useConnectedCoin, useNearSelector } from '../../../store';
+import { useConnectedCoin, useNearSelector, ActionKind } from '../../../store';
+import { successOption, errorOption } from '../../../constants';
+import { toast } from 'react-toastify';
+import { ethers } from "ethers";
 
 interface Props {
   coin: any
 }
+
+declare let window: any;
 
 const DepositPanel: FunctionComponent<Props> = (props) => {
   const { state, dispatch } = useStore();
@@ -32,9 +37,46 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
   const connectedCoin = useConnectedCoin();
   const nearSelector = useNearSelector();
 
-  const connectWallet = (coin_system: string) => {
-    if(coin_system == 'near') {
+  const logoutMetamask = async () => {
+    await window.ethereum.request({
+      method: "eth_requestAccounts",
+      params: [
+        {
+          eth_accounts: {}
+        }
+      ]
+    });
+    await window.ethereum.request({
+      method: "wallet_requestPermissions",
+      params: [
+        {
+          eth_accounts: {}
+        }
+      ]
+    });
+
+  }
+
+  const connectWallet = async (coinSystem: string) => {
+    if(coinSystem == 'Near') {
       nearSelector?.show();
+    }
+    else if(coinSystem == 'Ethereum') {
+      if (!window.ethereum) {
+        toast("No crypto wallet found. Please install it.", errorOption);
+      }
+
+      await logoutMetamask();
+    
+      await window.ethereum.send("eth_requestAccounts");
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      dispatch({ type: ActionKind.setConnectedEthereum, payload: true });
+      dispatch({ type: ActionKind.setEthereumSigner, payload: signer });
+    }
+    else if(coinSystem == 'Aurora') {
+      
     }
   }
 
