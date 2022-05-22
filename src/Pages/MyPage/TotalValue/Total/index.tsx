@@ -18,7 +18,7 @@ const Total: FunctionComponent = (props) => {
   let total = 0;
   coins.forEach(coin => {
     const deposited = coinDeposited[coin.name] * rates[coin.name] + floorNormalize(state.userInfoCoin[coin.name].reward_amount * rates[coin.name]);
-    total += coinBalances[coin.name] + deposited;
+    total += coinBalances[coin.name] * rates[coin.name] + deposited;
   })
 
   return (

@@ -32,7 +32,7 @@ const Seperator: FunctionComponent = (props) => {
     <VStack align={'baseline'} w={'240px'} spacing={'4px'}>
       {/* --------------------------------- */}
       <HStack spacing={'10px'}>
-        <Image src={BlackPanel} w={'15px'} />
+        <Image src={PinkPanel} w={'15px'} />
         <Text
           fontSize={'18px'}
           fontWeight={'860'}
@@ -58,7 +58,7 @@ const Seperator: FunctionComponent = (props) => {
       </Text>
       {/* --------------------------------- */}
       <HStack spacing={'10px'}>
-        <Image src={BluePanel} w={'15px'} />
+        <Image src={BlackPanel} w={'15px'} />
         <Text
           fontSize={'18px'}
           fontWeight={'860'}

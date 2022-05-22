@@ -97,6 +97,7 @@ export const coins = [
     blockchain: 'Wrapped Bitcoin',
     id: 'wrapped-bitcoin',
     stable: false,
+    available: true,
     testnet_address: 'wbtc.fakes.testnet',
     system: 'Near',
     floorNormalize: function (amount: number) {

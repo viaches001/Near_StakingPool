@@ -200,7 +200,7 @@ export const useCoinBalance = () => {
   let results:any = {};
   coins.forEach(coin => {
     let balance = state.uCoinBalance[coin.name];
-    results[coin.name] = floorNormalize(balance);
+    results[coin.name] = balance;
   })
 
   return results;
