@@ -21,7 +21,7 @@ const Left: FunctionComponent = (props) => {
           fontWeight={'860'}
           lineHeight={'24px'}
         >
-          TERRA TREASURY REWARDS PLUS PROGRAM 
+          NEAR TREASURY REWARDS PLUS PROGRAM 
         </Text>
         <a href="link: https://app.gitbook.com/s/kngrjQ3XHOHWXNeVNLmt/tt-protocol/rewards" target={"_blank"} rel="noreferrer">
         <MdInfoOutline />
@@ -57,7 +57,7 @@ const Left: FunctionComponent = (props) => {
           fontWeight={'860'}
           lineHeight={'36px'}
         >
-           UST
+           USD
         </Text>
       </HStack>
       <Button 

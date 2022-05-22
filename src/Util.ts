@@ -90,7 +90,7 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     if (status.farm_info !== undefined)
       dispatch({ type: ActionKind.setFarmInfo, payload: status.farm_info });
     if (status.farm_starttime !== undefined)
-      dispatch({ type: ActionKind.setFarmStartTime, payload: status.farm_starttime });
+      dispatch({ type: ActionKind.setFarmStartTime, payload: status.farm_starttime/10 ** 9 });
     if(status.pot_info != undefined)
       dispatch({ type: ActionKind.setPotInfo, payload: status.pot_info });
 

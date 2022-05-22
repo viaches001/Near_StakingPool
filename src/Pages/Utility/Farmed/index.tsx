@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { VStack, HStack, Stack, Flex, Text, Image, Link, Center, Divider, Button } from '@chakra-ui/react'
 
-import { OpenDepositModal, useStore } from '../../../store';
+// import { OpenDepositModal, useStore } from '../../../store';
 import YourFarmed from './YourFarmed';
 import Projected from './Projected';
 
 const Farmed: FunctionComponent = (props) => {
-  const { state, dispatch } = useStore();
+  // const { state, dispatch } = useStore();
   return (
     <Stack
       direction={{ sm: 'column', md: 'column', lg: 'row' }}

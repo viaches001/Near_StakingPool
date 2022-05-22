@@ -64,8 +64,7 @@ const LockedChart: FunctionComponent<Props> = () => {
                   const i = tooltip.dataPoints[0].dataIndex;
                   const item = data[i];
 
-                  div1.innerHTML = `${getDateString(Number(String(item.time).slice(0, 10)))}`;
-                  console.log()
+                  div1.innerHTML = `${getDateString(item.time/10 ** 9)}`;
                   div2.innerHTML = `$${item.totalUSD.toLocaleString()}`;
 
                   let style="border-radius: 50%; background-color: #493C3C; width: 20px; height: 20px; position: absolute; ";

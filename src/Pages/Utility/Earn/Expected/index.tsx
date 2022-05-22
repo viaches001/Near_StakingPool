@@ -30,7 +30,7 @@ const Expected: FunctionComponent<Props> = ({amount}) => {
         fontWeight={'860'}
         lineHeight={'20px'}
       >
-        Your expected TerraT Allocation 
+        Your expected NearT Allocation 
       </Text>
       <Text
         mt={'40px'}
@@ -41,7 +41,7 @@ const Expected: FunctionComponent<Props> = ({amount}) => {
         fontStyle={'italic'}
         color={'#CEBFBF'}
       >
-        The Projected Allocation Value: {expectedUSD.toLocaleString()}UST 
+        The Projected Allocation Value: {expectedUSD.toLocaleString()}USD
       </Text>
     </Flex>
   );

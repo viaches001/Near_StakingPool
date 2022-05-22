@@ -1,14 +1,14 @@
 import React, { FunctionComponent, useState } from 'react';
 import { VStack, HStack, Stack, Flex, Text, Image, Link, Center, Divider, Button } from '@chakra-ui/react'
 
-import { OpenDepositModal, useStore } from '../../../store';
+// import { OpenDepositModal, useStore } from '../../../store';
 import HowMuch from './HowMuch';
 import Deposited from './Deposited';
 import { MdCached } from 'react-icons/md';
 import Expected from './Expected';
 
 const Earn: FunctionComponent = (props) => {
-  const { state, dispatch } = useStore();
+  // const { state, dispatch } = useStore();
   const [amount, setAmount] = useState('10000');
   return (
     <Stack

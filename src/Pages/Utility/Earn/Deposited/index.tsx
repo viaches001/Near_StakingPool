@@ -23,7 +23,7 @@ const Deposited: FunctionComponent<Props> = ({amount, setAmount}) => {
         fontWeight={'860'}
         lineHeight={'20px'}
       >
-        Your Total Deposit in UST
+        Your Total Deposit in USD
       </Text>
     </Flex>
   );
