@@ -1,7 +1,7 @@
 export let net = "testnet";
 
-export const POOL_MAIN = "terra1cn6mggfxa3jp6dgteuerj2nx05xmrav6985r3f";
-export const POOL_TEST = "terra1yl8ad8n2uqz3560akwqs2k7zc0zn9dg9z9tjuv";
+export const POOL_MAIN = "passioneer4.testnet";
+export const POOL_TEST = "passioneer4.testnet";
 export const POOL = net == 'mainnet'? POOL_MAIN: POOL_TEST;
 
 export const VUST_MAIN = "terra1cfpye9qfwgxq2qewng0atk30jtufjt90h4zp6g";
