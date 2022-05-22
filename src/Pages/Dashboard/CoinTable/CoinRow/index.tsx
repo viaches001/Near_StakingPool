@@ -8,6 +8,7 @@ import {
 } from '../../../../store';
 import AnimationNumber from '../../../Components/AnimationNumber';
 import { floor, floorNormalize } from '../../../../Util';
+import { useConnectedCoin, useConnectWallet } from '../../../../store';
 
 interface Props {
 	rates: any,
@@ -23,6 +24,8 @@ const CoinRow: FunctionComponent<Props> = ({rates, coinApr, coin, history, last}
   const amount = (last >= 0 ? floor(history[last][`${coin.name}_amount`]) : 0)+
     + floorNormalize(state.coin_total_rewards[coin.name]) || 0;
   const usd_amount = amount * rate || 0;
+  const connectedCoin = useConnectedCoin();
+  const connectWallet = useConnectWallet();
 
   return (
 		<Tr>
@@ -86,14 +89,14 @@ const CoinRow: FunctionComponent<Props> = ({rates, coinApr, coin, history, last}
 						w={{ sm: '90%', md: '90%', lg: '46%' }}
 						background={'#493C3C'} 
 						rounded={'25px'}
-						onClick={() => OpenDepositModal(state, dispatch, coin.name as COINTYPE)}
+						onClick={!connectedCoin[coin.name]? async () => (await connectWallet)(coin.system): () => OpenDepositModal(state, dispatch, coin.name)}
 					>
 						<Text
 							fontSize={'11px'}
 							fontWeight={'800'}
 							lineHeight={'15px'}
 						>
-							Deposit
+							{connectedCoin[coin.name]? 'Deposit': 'Connect Wallet'}
 						</Text>
 					</Button>
 					<Button 
@@ -102,13 +105,13 @@ const CoinRow: FunctionComponent<Props> = ({rates, coinApr, coin, history, last}
 						// background={'#493C3C'} 
 						rounded={'25px'}
 						variant='outline'
-						onClick={() => OpenWithdrawModal(state, dispatch, coin.name as COINTYPE)}
+						onClick={!connectedCoin[coin.name]? async () => (await connectWallet)(coin.system): () => OpenWithdrawModal(state, dispatch, coin.name)}
 					>
 						<Text
 							fontSize={'11px'}
 							fontWeight={'800'}
 						>
-							Withdraw
+							{connectedCoin[coin.name]? 'Withdraw': 'Connect Wallet'}
 						</Text>
 					</Button>
 				</Stack>

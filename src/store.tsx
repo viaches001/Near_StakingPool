@@ -3,6 +3,9 @@ import { floor, floorNormalize } from './Util'
 import { amountHistory, aprHistory, userInfo, farmInfo, potInfo, coins, uCoinBalance, coinPrice } from './constants'
 import NearWalletSelector from "@near-wallet-selector/core";
 import { Signer } from 'ethers';
+import { toast } from 'react-toastify';
+import { ethers } from "ethers";
+import { errorOption } from './constants';
 
 export type COINTYPE = 'usdc' | 'usdt' | 'dai' | 'usn' | 'wbtc' | 'eth' | 'wnear' | 'neart';
 
@@ -10,6 +13,8 @@ interface Action {
   type: ActionKind;
   payload: any;
 }
+
+declare let window: any;
 
 export interface AppContextInterface {
   loading: boolean,
@@ -242,7 +247,7 @@ export const useCoinApr = () => {
   coins.forEach(coin => {
     const data = state.aprHistory[coin.name];
     const last = data? data.length - 1: -1;
-    apr[coin.name] = last >= 0? parseInt(data[last].apr) / 100: 0;
+    apr[coin.name] = last >= 0? parseInt(data[last].apr) / 10 ** 6: 0;
   })
   
   return apr;
@@ -261,6 +266,52 @@ export const useConnectedCoin = () => {
     res[coin.name] = (state as any)[`connected${coin.system}`];
   })
   return res;
+}
+
+const logoutMetamask = async () => {
+  await window.ethereum.request({
+    method: "eth_requestAccounts",
+    params: [
+      {
+        eth_accounts: {}
+      }
+    ]
+  });
+  await window.ethereum.request({
+    method: "wallet_requestPermissions",
+    params: [
+      {
+        eth_accounts: {}
+      }
+    ]
+  });
+}
+
+export const useConnectWallet = async () => {
+  const {state, dispatch} = useStore();
+  const nearSelector = useNearSelector();
+  return async (coinSystem: string) => {
+    if(coinSystem == 'Near') {
+      nearSelector?.show();
+    }
+    else if(coinSystem == 'Ethereum') {
+      if (!window.ethereum) {
+        toast("No crypto wallet found. Please install it.", errorOption);
+      }
+  
+      await logoutMetamask();
+    
+      await window.ethereum.send("eth_requestAccounts");
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+  
+      dispatch({ type: ActionKind.setConnectedEthereum, payload: true });
+      dispatch({ type: ActionKind.setEthereumSigner, payload: signer });
+    }
+    else if(coinSystem == 'Aurora') {
+      
+    }
+  }
 }
 
 export const OpenDepositModal = (state:AppContextInterface , dispatch: React.Dispatch<any>, type: COINTYPE) => {

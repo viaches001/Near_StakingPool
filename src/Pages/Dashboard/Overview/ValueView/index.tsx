@@ -22,7 +22,7 @@ const ValueView: FunctionComponent = (props) => {
     const amount = (last >= 0 ? floor(history[last][`${coin.name}_amount`] * rate) : 0)+
       + floorNormalize(state.coin_total_rewards[coin.name] * rate);
     if(coin.stable) {
-      stableAmount += amount;
+      stableAmount += (amount || 0);
     }
     else volatileAmount += amount;
   })

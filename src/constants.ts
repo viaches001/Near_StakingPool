@@ -149,32 +149,7 @@ export const amountHistory = amountHistory_;
 
 const apiHistoryInfo:any = {};
 coins.forEach(coin => {
-  apiHistoryInfo[coin.name] = [
-    {
-      time: 1648939268,
-      apr: "3547",
-    },
-    {
-      time: 1648939268,
-      apr: "3547",
-    },
-    {
-      time: 1648939268,
-      apr: "3547",
-    },
-    {
-      time: 1648939268,
-      apr: "3547",
-    },
-    {
-      time: 1648939268,
-      apr: "3547",
-    },
-    {
-      time: 1648939268,
-      apr: "3547",
-    },
-  ];
+  apiHistoryInfo[coin.name] = [];
 })
 export const aprHistory = apiHistoryInfo;
 
