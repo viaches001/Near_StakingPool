@@ -41,7 +41,7 @@ const Seperator: FunctionComponent = (props) => {
           Total Balance
         </Text>
         <Tooltip 
-          label="Total of all UST/Luna deposits, including earnings " 
+          label="Total of all deposits, including earnings " 
           background={'#C4C4C4'} 
           color={'black'} hasArrow 
           placement='top-start'

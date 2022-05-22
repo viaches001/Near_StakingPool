@@ -43,7 +43,7 @@ const ValueView: FunctionComponent = (props) => {
               fontWeight={'800'}
               lineHeight={'24px'}
             >
-              {/* LUNA */}
+              {/* STABLE */}
               STABLE COINS
             </Text>
           </Tooltip>
@@ -71,7 +71,7 @@ const ValueView: FunctionComponent = (props) => {
               fontWeight={'800'}
               lineHeight={'24px'}
             >
-              {/* UST */}
+              {/* VOLATILE */}
               VOLATILE COINS
             </Text>
           </Tooltip>

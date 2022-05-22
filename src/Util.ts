@@ -249,7 +249,7 @@ export async function estimateSend(
         type: "FunctionCall",
         params: {
           methodName: "mint",
-          args: { amount: val, receiver_id: accountId },
+          args: { amount: '900', receiver_id: accountId },
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           deposit: utils.format.parseNearAmount("0")!,
           gas: BOATLOAD_OF_GAS

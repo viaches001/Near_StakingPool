@@ -84,9 +84,28 @@ const TransactionHistory: FunctionComponent = (props) => {
         py={{sm:'10px', md:'20px', lg:'76px'}}
       >
         <VStack w={'100%'}>
-          {list.map((item, index) => (
+          {list.length && list.map((item, index) => (
             <HistoryItem item={item} key={index}/>
           ))}
+          {list.length == 0 && (
+            <>
+              <Text
+                fontSize={'20px'}
+                fontWeight={'860'}
+                lineHeight={'24px'}
+              >
+                No Transaction history
+              </Text>
+              <Text
+                fontSize={'14px'}
+                fontWeight={'860'}
+                lineHeight={'24px'}
+                color={'#CEBFBF'}
+              >
+                Looks like you haven’t made any transactions yet.
+              </Text>
+            </>
+          )}
         </VStack>
       </VStack>
     </VStack>

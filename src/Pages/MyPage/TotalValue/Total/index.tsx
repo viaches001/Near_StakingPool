@@ -33,7 +33,7 @@ const Total: FunctionComponent = (props) => {
             TOTAL VALUE
           </Text>
           <Tooltip
-            label="Total value of UST/Luna deposits, payed interest, and UST Wallet Balance"
+            label="Total value of all deposits, payed interest, and USD Wallet Balance"
             background={'#C4C4C4'}
             color={'black'} hasArrow
             placement='top-start'

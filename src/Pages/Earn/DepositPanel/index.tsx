@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { VStack, Stack, Text, Divider, HStack, Image, Flex, Button } from '@chakra-ui/react'
 import { Grid, GridItem, Tooltip } from '@chakra-ui/react'
-
-// import LunaIcon from './../../../assets/Luna.svg'
 import {
   OpenDepositModal,
   OpenWithdrawModal,

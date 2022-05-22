@@ -72,7 +72,7 @@ const CoinTable: FunctionComponent = () => {
               </Th>
               <Th w={'30%'}>
                 <Tooltip
-                  label="Total of all LUNA deposits including earnings "
+                  label="Total of all Coin deposits including earnings "
                   background={'#C4C4C4'} 
                   placement='top-start'
                   color={'black'}

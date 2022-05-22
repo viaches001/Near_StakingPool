@@ -5,13 +5,16 @@ import { MdInfoOutline } from 'react-icons/md';
 import Warning from '../../../../assets/Warning.svg'
 import { floorNormalize } from '../../../../Util';
 import { OpenDepositModal, useStore, useExchangeRate } from '../../../../store';
+import { coins } from '../../../../constants';
 
 const Left: FunctionComponent = (props) => {
   const {state, dispatch} = useStore();
-  const ustAmount = state.potInfo.qualified_ust_amount;
-  const lunaAmount = state.potInfo.qualified_luna_amount;
-  const rate = useExchangeRate();
-  const amount = floorNormalize(parseFloat(ustAmount) + parseFloat(lunaAmount) * rate);
+  const rates = useExchangeRate();
+  let amount = 0;
+  coins.forEach(coin => {
+    const coinAmount = parseFloat(state.potInfo[`qualified_${coin.name}_amount`]) * rates[coin.name];
+    amount += floorNormalize(coinAmount);
+  })
 
   return (
     <Flex w={'100%'} direction="column">
