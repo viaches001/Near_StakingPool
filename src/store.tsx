@@ -10,8 +10,6 @@ interface Action {
   payload: any;
 }
 
-declare let window: any;
-
 export interface AppContextInterface {
   loading: boolean,
   net: "mainnet" | "testnet",
@@ -21,6 +19,8 @@ export interface AppContextInterface {
   openWithdrawModal: (() => void) | undefined,
   openWaitingModal: (() => void) | undefined,
   closeWaitingModal: (() => void) | undefined,
+  openFailedTxModal: (() => void) | undefined,
+  closeFailedTxModal: (() => void) | undefined,
   coinType: COINTYPE,
   isPending: boolean,
   amountHistory: any[],
@@ -47,6 +47,8 @@ const initialState: AppContextInterface = {
   openWithdrawModal: undefined,
   openWaitingModal: undefined,
   closeWaitingModal: undefined,
+  openFailedTxModal: undefined,
+  closeFailedTxModal: undefined,
   coinType: 'usdc',
   isPending: false,
   amountHistory: amountHistory,
@@ -263,6 +265,12 @@ export const OpenWithdrawModal = (state:AppContextInterface , dispatch: React.Di
   dispatch({type: ActionKind.setCoinType, payload: type});
   if(state.openWithdrawModal != undefined)
     state.openWithdrawModal()
+}
+
+export const OpenFailedTxModal = (state:AppContextInterface) => 
+{
+  if(state.openFailedTxModal != undefined)
+    state.openFailedTxModal()
 }
 
 // const baseURL = "https://api.coingecko.com/api/v3/";

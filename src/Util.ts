@@ -228,17 +228,13 @@ export function sleep(ms: number) {
 export async function estimateSend(
   type: string,
   selector: any,
-  lcd: any,
-  amount: any,
-  accountId: string | null,
-  message: string,
-  memo: string
+  methodName: string,
+  args: any
 ) {
   if(!selector) 
     return undefined;
 
-  const contractName = "passioneer3.testnet";
-  const val = utils.format.parseNearAmount(amount || "0") || 0;
+  const contractName = "passioneer4.testnet";
   const BOATLOAD_OF_GAS = utils.format.parseNearAmount("0.00000000003")!;
 
   selector
@@ -248,8 +244,8 @@ export async function estimateSend(
       {
         type: "FunctionCall",
         params: {
-          methodName: "mint",
-          args: { amount: '900', receiver_id: accountId },
+          methodName: methodName,
+          args: args,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           deposit: utils.format.parseNearAmount("0")!,
           gas: BOATLOAD_OF_GAS

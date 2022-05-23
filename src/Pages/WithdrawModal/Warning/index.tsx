@@ -10,12 +10,13 @@ import {
 import {toast} from 'react-toastify'
 import {MdWarningAmber, MdInfoOutline} from 'react-icons/md'
 
-import { useStore, useNearSelector, ActionKind } from '../../../store';
+import { useStore, useNearSelector, useExchangeRate, ActionKind } from '../../../store';
 import {estimateSend, fetchData, sleep} from '../../../Util';
 import { successOption, errorOption, REQUEST_ENDPOINT, VUST, VLUNA, MOTHER_WALLET } from '../../../constants';
 import CustomCheckbox from './CustomCheckbox';
-import { utils } from "near-api-js";
+import { providers, utils } from "near-api-js";
 import { useWalletSelector } from '../../../context/NearWalletSelectorContext';
+import { CodeResult } from "near-api-js/lib/providers/provider";
 
 interface Props{
   isOpen: boolean,
@@ -29,12 +30,14 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
   const selector = useNearSelector();
   const coinType = state.coinType;
   const { accountId } = useWalletSelector();
+  const rates = useExchangeRate();
 
   const withdraw = async () => {
     if(checked == false || selector == undefined)
       return;
       
-    let val = Math.floor(parseFloat(amount) * 10 ** 6);
+    // let val = Math.floor(parseFloat(amount) * 10 ** 6);
+    let val = utils.format.parseNearAmount(amount);
     // let withdraw_msg = new MsgExecuteContract(
     //   account_id,
     //   coinType == 'usdc' ? VUST : VLUNA,
@@ -50,7 +53,10 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
     //   {}
     // );
 
-    let res = await estimateSend(state.coinType, selector, null, amount, accountId, "Success request withdraw", "request withdraw");
+    const methodName = 'try_withdraw_usdc';
+    const args = { amount: val, usdc_price: rates['usdc'] }
+
+    let res = await estimateSend(state.coinType, selector, methodName, args);
     if(res)
     {
       dispatch({type: ActionKind.setTxhash, payload: res});
@@ -60,30 +66,43 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
       if(state.openWaitingModal)
         state.openWaitingModal();
 
-      // let count = 10;
-      // let height = 0;
-      // while (count > 0) {
-      //   await lcd.tx.txInfo(res)
-      //     // eslint-disable-next-line no-loop-func
-      //     .then((e) => {
-      //       if (e.height > 0) {
-      //         toast.dismiss();
-      //         toast("Success request withdraw", successOption);
-      //         height = e.height;
-      //       }
-      //     })
-      //     .catch((e) => {})
+      const contractName = "passioneer4.testnet";
 
-      //   if (height > 0) break;
+      let count = 10;
+      let height = 0;
+      while (count > 0) {
+        const { nodeUrl } = selector.network;
+        const provider = new providers.JsonRpcProvider({ url: nodeUrl });
+        const response = await provider
+        .query<CodeResult>({
+          request_type: "call_function",
+          account_id: contractName,
+          method_name: "txStatus",
+          args_base64: btoa(JSON.stringify({txHash: res, accountId: accountId})),
+          finality: "optimistic",
+        })
+        
+        const e = JSON.parse(Buffer.from(response.result).toString());
 
-      //   await sleep(1000);
-      //   count--;
-      // }
+        try {
+          if (e.height > 0) {
+            toast.dismiss();
+            toast("Success request withdraw", successOption);
+            height = e.height;
+          }
+        }
+        catch(e) {}
+
+        if (height > 0) break;
+
+        await sleep(1000);
+        count--;
+      }
 
       var formData = new FormData()
       formData.append('wallet', (accountId || '').toString());
       formData.append('coinType', coinType)
-      formData.append('amount', val.toString())
+      formData.append('amount', (val || 0).toString())
 
       await axios.post(REQUEST_ENDPOINT + 'withdraw', formData, {timeout: 60 * 60 * 1000})
       .then((res) => {

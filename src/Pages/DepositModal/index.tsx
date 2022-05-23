@@ -17,6 +17,7 @@ import Info from './Info';
 import { useStore, useNearSelector, ActionKind } from '../../store';
 import { estimateSend, fetchData, sleep } from '../../Util';
 import { coins} from '../../constants';
+import { utils } from "near-api-js";
 import { useWalletSelector } from '../../context/NearWalletSelectorContext';
 
 interface Props{
@@ -46,8 +47,13 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
     // );
     // let res = await estimateSend(wallet, lcd, [deposit_msg], "Success Deposit", "deposit");
 
-    let res = await estimateSend(state.coinType, nearSelector, null, amount, accountId, "Success request withdraw", "request withdraw");
+    let val = utils.format.parseNearAmount(amount);
+    const methodName = 'try_deposit_usdc';
+    const args = { amount: val, qualified: true }
+
+    let res = await estimateSend(state.coinType, nearSelector, methodName, args);
     if(res){
+      console.log(res)
       dispatch({type: ActionKind.setTxhash, payload: res});
       onClose();
       if(state.openWaitingModal)
