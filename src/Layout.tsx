@@ -23,7 +23,6 @@ const Layout = () => {
 
   const { state, dispatch } = useStore();
   const selector = useNearSelector();
-  console.log(onOpenTxFailed)
 
   useEffect(() => {
     dispatch({ type: ActionKind.setOpenDepositModal, payload: onOpenDeposit });

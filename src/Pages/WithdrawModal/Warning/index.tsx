@@ -12,7 +12,7 @@ import {MdWarningAmber, MdInfoOutline} from 'react-icons/md'
 
 import { useStore, useNearSelector, useExchangeRate, ActionKind } from '../../../store';
 import {estimateSend, fetchData, sleep} from '../../../Util';
-import { successOption, errorOption, REQUEST_ENDPOINT, VUST, VLUNA, MOTHER_WALLET } from '../../../constants';
+import { successOption, errorOption, REQUEST_ENDPOINT, POOL } from '../../../constants';
 import CustomCheckbox from './CustomCheckbox';
 import { providers, utils } from "near-api-js";
 import { useWalletSelector } from '../../../context/NearWalletSelectorContext';
@@ -39,47 +39,39 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
     // let val = Math.floor(parseFloat(amount) * 10 ** 6);
     let val = utils.format.parseNearAmount(amount);
 
-    const methodName = 'try_withdraw_usdc';
-    const args = { amount: val, usdc_price: rates['usdc'] }
-    
-    let res = await estimateSend(state.coinType, selector, methodName, args);
-    if(res)
-    {
-      dispatch({type: ActionKind.setTxhash, payload: res});
+    const methodName = 'try_withdraw';
+    // const args = { token_name: "usdc", amount: String(val), token_prices: [{name: "usdc", price: String(rates['usdc'])}] }
+    const args = { token_name: "usdc", amount: '900', token_prices: [{name: "usdc", price: '2'}] }
 
+    let txHash:any = await estimateSend(selector, methodName, args);
+    txHash = '75wJNy3rFiFT6CnZDNZ54mEJxBSZKsR8EnjfHWd2uTXc';
+    if(txHash)
+    {
+      dispatch({type: ActionKind.setTxhash, payload: txHash});
+      
       onClose();
       onCloseParent();
       if(state.openWaitingModal)
         state.openWaitingModal();
-
-      const contractName = "passioneer4.testnet";
 
       let count = 10;
       let height = 0;
       while (count > 0) {
         const { nodeUrl } = selector.network;
         const provider = new providers.JsonRpcProvider({ url: nodeUrl });
-        const response = await provider
-        .query<CodeResult>({
-          request_type: "call_function",
-          account_id: contractName,
-          method_name: "txStatus",
-          args_base64: btoa(JSON.stringify({txHash: res, accountId: accountId})),
-          finality: "optimistic",
-        })
-        
-        const e = JSON.parse(Buffer.from(response.result).toString());
+        const response = await provider.txStatus(txHash, accountId as string);
+        console.log(response)
 
-        try {
-          if (e.height > 0) {
-            toast.dismiss();
-            toast("Success request withdraw", successOption);
-            height = e.height;
-          }
-        }
-        catch(e) {}
+        // try {
+        //   if (e.height > 0) {
+        //     toast.dismiss();
+        //     toast("Success request withdraw", successOption);
+        //     height = e.height;
+        //   }
+        // }
+        // catch(e) {}
 
-        if (height > 0) break;
+        // if (height > 0) break;
 
         await sleep(1000);
         count--;
@@ -109,6 +101,10 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
         if(state.closeWaitingModal)
           state.closeWaitingModal();
       });
+    }
+    else {
+      if(state.openFailedTxModal)
+        state.openFailedTxModal();
     }
   }
 

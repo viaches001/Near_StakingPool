@@ -1,7 +1,7 @@
 export let net = "testnet";
 
 export const POOL_MAIN = "passioneer4.testnet";
-export const POOL_TEST = "passioneer4.testnet";
+export const POOL_TEST = "staking_voucher_tokens.testnet";
 export const POOL = net == 'mainnet'? POOL_MAIN: POOL_TEST;
 
 export const VUST_MAIN = "terra1cfpye9qfwgxq2qewng0atk30jtufjt90h4zp6g";

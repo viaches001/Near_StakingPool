@@ -46,7 +46,8 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     farmInfo = undefined,
     portInfo = undefined,
     farmStartTime = undefined,
-    status: any = undefined
+    status: any = undefined,
+    coin_total_rewards: any = undefined
 
   coinInfo = {};
   try {
@@ -79,6 +80,7 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     status = JSON.parse(Buffer.from(res.result).toString());
   } catch (e) { }
 
+
   if (status) {
     if (status.amount_history !== undefined)
       dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(status.amount_history, rates) });
@@ -103,35 +105,37 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     })
   }
   else {
+    /* ------------------- start contract provider -----------------------*/
     try {
       const amountsProvider = await provider
       .query<CodeResult>({
         request_type: "call_function",
         account_id: POOL,
-        method_name: "get_amount_history",
-        args_base64: "",
+        method_name: "get_token_amount_historys",
+        args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
         finality: "optimistic",
       });
       amountHistory = JSON.parse(Buffer.from(amountsProvider.result).toString());
-      console.log(amountHistory)
+      amountHistory = amountHistory.map((item: any) => ({
+        time: item.time,
+        usdc_amount: item.deposit_amount,
+        usdc_reward: item.reward_amount,
+      }))
     } catch (e) { console.log(e) }
-  
+
     try {
       if(!aprHistory) aprHistory = {};
-      for(const coin of coins)
-      {
-        const res = await provider
-        .query<CodeResult>({
-          request_type: "call_function",
-          account_id: POOL,
-          method_name: `get_${coin.name}_apr_history`,
-          args_base64: "",
-          finality: "optimistic",
-        });
-        aprHistory[coin.name] = JSON.parse(Buffer.from(res.result).toString());
-      }
+      const res = await provider
+      .query<CodeResult>({
+        request_type: "call_function",
+        account_id: POOL,
+        method_name: `get_token_apr_history`,
+        args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
+        finality: "optimistic",
+      });
+      aprHistory['usdc'] = JSON.parse(Buffer.from(res.result).toString());
     } catch (e) { console.log(e) }
-  
+
     try {
       if(!userInfoCoin) userInfoCoin = {};
       for(const coin of coins)
@@ -140,14 +144,15 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
         .query<CodeResult>({
           request_type: "call_function",
           account_id: POOL,
-          method_name: `get_${coin.name}_user_info`,
+          method_name: `get_user_pool_info`,
           args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
           finality: "optimistic",
         });
-        userInfoCoin[coin.name] = JSON.parse(Buffer.from(res.result).toString());
+        userInfoCoin['usdc'] = JSON.parse(Buffer.from(res.result).toString());
+        userInfoCoin['usdc'] = userInfoCoin['usdc'].map((item: any) => ({...item, amount: item.deposit_amount}))[0];
       }
-    } catch (e) { }
-  
+    } catch (e) { console.log(e)}
+
     try {
       const res = await provider
       .query<CodeResult>({
@@ -159,13 +164,13 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
       });
       farmPrice = JSON.parse(Buffer.from(res.result).toString());
     } catch (e) { }
-  
+
     try {
       const res = await provider
       .query<CodeResult>({
         request_type: "call_function",
         account_id: POOL,
-        method_name: `get_farm_info`,
+        method_name: `get_user_farm_info`,
         args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
         finality: "optimistic",
       });
@@ -177,7 +182,7 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
       .query<CodeResult>({
         request_type: "call_function",
         account_id: POOL,
-        method_name: `get_farm_starttime`,
+        method_name: `get_farm_start_time`,
         args_base64: "",
         finality: "optimistic",
       });
@@ -189,12 +194,122 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
       .query<CodeResult>({
         request_type: "call_function",
         account_id: POOL,
-        method_name: `get_pot_info`,
+        method_name: `get_user_pot_info`,
         args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
         finality: "optimistic",
       });
       portInfo = JSON.parse(Buffer.from(res.result).toString());
+      portInfo = portInfo.map((item: any) => ({...item, amount: item.unqualified_amount}))
     } catch (e) { }
+
+    try {
+      if(!coin_total_rewards) coin_total_rewards = {};
+      const res = await provider
+      .query<CodeResult>({
+        request_type: "call_function",
+        account_id: POOL,
+        method_name: `get_token_total_reward`,
+        args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
+        finality: "optimistic",
+      });
+      coin_total_rewards['usdc'] = JSON.parse(Buffer.from(res.result).toString());
+      
+    } catch (e) { console.log(e)}
+  
+    /* ---------------end contract provider-----------------------*/
+
+    // try {
+    //   const amountsProvider = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: "get_amount_history",
+    //     args_base64: "",
+    //     finality: "optimistic",
+    //   });
+    //   amountHistory = JSON.parse(Buffer.from(amountsProvider.result).toString());
+    //   console.log(amountHistory)
+    // } catch (e) { console.log(e) }
+  
+    // try {
+    //   if(!aprHistory) aprHistory = {};
+    //   for(const coin of coins)
+    //   {
+    //     const res = await provider
+    //     .query<CodeResult>({
+    //       request_type: "call_function",
+    //       account_id: POOL,
+    //       method_name: `get_${coin.name}_apr_history`,
+    //       args_base64: "",
+    //       finality: "optimistic",
+    //     });
+    //     aprHistory[coin.name] = JSON.parse(Buffer.from(res.result).toString());
+    //   }
+    // } catch (e) { console.log(e) }
+  
+    // try {
+    //   if(!userInfoCoin) userInfoCoin = {};
+    //   for(const coin of coins)
+    //   {
+    //     const res = await provider
+    //     .query<CodeResult>({
+    //       request_type: "call_function",
+    //       account_id: POOL,
+    //       method_name: `get_${coin.name}_user_info`,
+    //       args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
+    //       finality: "optimistic",
+    //     });
+    //     userInfoCoin[coin.name] = JSON.parse(Buffer.from(res.result).toString());
+    //   }
+    // } catch (e) { }
+  
+    // try {
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_farm_price`,
+    //     args_base64: "",
+    //     finality: "optimistic",
+    //   });
+    //   farmPrice = JSON.parse(Buffer.from(res.result).toString());
+    // } catch (e) { }
+  
+    // try {
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_farm_info`,
+    //     args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
+    //     finality: "optimistic",
+    //   });
+    //   farmInfo = JSON.parse(Buffer.from(res.result).toString());
+    // } catch (e) { }
+  
+    // try {
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_farm_starttime`,
+    //     args_base64: "",
+    //     finality: "optimistic",
+    //   });
+    //   farmStartTime = JSON.parse(Buffer.from(res.result).toString());
+    // } catch (e) { }
+  
+    // try {
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_pot_info`,
+    //     args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
+    //     finality: "optimistic",
+    //   });
+    //   portInfo = JSON.parse(Buffer.from(res.result).toString());
+    // } catch (e) { }
     
     if (amountHistory !== undefined)
       dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(amountHistory, rates) });
@@ -206,13 +321,16 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
       dispatch({ type: ActionKind.setFarmStartTime, payload: farmStartTime });
     if(portInfo != undefined)
       dispatch({ type: ActionKind.setPotInfo, payload: portInfo });
-
+  
     coins.forEach(async coin => {
       if (aprHistory[coin.name] !== undefined)
         dispatch({ type: ActionKind.setAprHistory, payload: { type: coin.name, data: aprHistory[coin.name] } });
-
+  
       if (userInfoCoin[coin.name] !== undefined)
         dispatch({ type: ActionKind.setUserInfoCoin, payload: { type: coin.name, data: userInfoCoin[coin.name] } });
+
+      if (coin_total_rewards[coin.name] !== undefined)
+        dispatch({ type: ActionKind.setCoinTotalRewards, payload: { type: coin.name, data: coin_total_rewards[coin.name] } });
     })
   }
 
@@ -224,7 +342,6 @@ export function sleep(ms: number) {
 }
 
 export async function estimateSend(
-  type: string,
   selector: any,
   methodName: string,
   args: any
@@ -232,12 +349,11 @@ export async function estimateSend(
   if(!selector) 
     return undefined;
 
-  const contractName = "passioneer4.testnet";
   const BOATLOAD_OF_GAS = utils.format.parseNearAmount("0.00000000003")!;
 
   selector
   .signAndSendTransaction({
-    receiverId: contractName,
+    receiverId: POOL,
     actions: [
       {
         type: "FunctionCall",
@@ -251,9 +367,9 @@ export async function estimateSend(
       },
     ],
   })
-  .then(async () => {
+  .then(async (e: any) => {
     toast("Successs! Please wait", successOption);
-    // return e.result.txhash;
+    return e;
   })
   .catch((e: any) => {
     toast(e.message, errorOption);

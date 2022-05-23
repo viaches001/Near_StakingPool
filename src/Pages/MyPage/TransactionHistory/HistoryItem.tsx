@@ -10,7 +10,7 @@ interface Props {
 }
 const HistoryItem: FunctionComponent<Props> = ({ item }) => {
   let net = useNetworkName();
-  let findURL = net == 'mainnet'? "https://finder.terra.money/tx/" : "https://finder.terra.money/testnet/tx/";
+  let findURL = net == 'mainnet'? "https://explorer.near.org/transactions/" : "https://explorer.testnet.near.org/transactions/";
   return (
     <>
       <Flex
