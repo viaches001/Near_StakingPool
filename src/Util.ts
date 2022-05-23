@@ -55,7 +55,7 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
       const instance = axios.create({
         baseURL: `https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${coin.id}`
       });
-      instance.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
+      instance.defaults.headers.get['Access-Control-Allow-Origin'] = '*';
       const res = await instance.get('');
       coinInfo[coin.name] = res.data[coin.id].usd;
     }
@@ -76,11 +76,8 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
       args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
       finality: "optimistic",
     });
-    console.log(JSON.parse(Buffer.from(res.result).toString()))
     status = JSON.parse(Buffer.from(res.result).toString());
   } catch (e) { }
-
-  console.log(status)
 
   if (status) {
     if (status.amount_history !== undefined)
@@ -116,6 +113,7 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
         finality: "optimistic",
       });
       amountHistory = JSON.parse(Buffer.from(amountsProvider.result).toString());
+      console.log(amountHistory)
     } catch (e) { console.log(e) }
   
     try {

@@ -38,24 +38,10 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
       
     // let val = Math.floor(parseFloat(amount) * 10 ** 6);
     let val = utils.format.parseNearAmount(amount);
-    // let withdraw_msg = new MsgExecuteContract(
-    //   account_id,
-    //   coinType == 'usdc' ? VUST : VLUNA,
-    //   {
-    //     "increase_allowance": {
-    //         "spender": `${MOTHER_WALLET}`,
-    //         "amount": `${val}`,
-    //         "expires": {
-    //             "never": {}
-    //         }
-    //     }
-    //   },
-    //   {}
-    // );
 
     const methodName = 'try_withdraw_usdc';
     const args = { amount: val, usdc_price: rates['usdc'] }
-
+    
     let res = await estimateSend(state.coinType, selector, methodName, args);
     if(res)
     {

@@ -76,6 +76,8 @@ export enum ActionKind{
   setOpenWithdrawModal,
   setOpenWaitingModal,
   setCloseWaitingModal,
+  setOpenTxFailedModal,
+  setCloseTxFailedModal,
   setCoinType,
   setIsPending,
   setAmountHistory,
@@ -116,7 +118,11 @@ export const reducer = (state: AppContextInterface,  action: Action ) => {
     case ActionKind.setOpenWaitingModal:
       return { ...state, openWaitingModal: action.payload}
     case ActionKind.setCloseWaitingModal:
-      return { ...state, closeWaitingModal: action.payload}      
+      return { ...state, closeWaitingModal: action.payload}   
+    case ActionKind.setOpenTxFailedModal:
+      return { ...state, openFailedTxModal: action.payload}
+    case ActionKind.setCloseTxFailedModal:
+      return { ...state, closeFailedTxModal: action.payload}         
     case ActionKind.setCoinType:
       return { ...state, coinType: action.payload}
     case ActionKind.setIsPending:
@@ -265,12 +271,6 @@ export const OpenWithdrawModal = (state:AppContextInterface , dispatch: React.Di
   dispatch({type: ActionKind.setCoinType, payload: type});
   if(state.openWithdrawModal != undefined)
     state.openWithdrawModal()
-}
-
-export const OpenFailedTxModal = (state:AppContextInterface) => 
-{
-  if(state.openFailedTxModal != undefined)
-    state.openFailedTxModal()
 }
 
 // const baseURL = "https://api.coingecko.com/api/v3/";
