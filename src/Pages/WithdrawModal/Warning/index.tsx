@@ -77,30 +77,10 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
         count--;
       }
 
-      var formData = new FormData()
-      formData.append('wallet', (accountId || '').toString());
-      formData.append('coinType', coinType)
-      formData.append('amount', (val || 0).toString())
+      if(state.closeWaitingModal)
+        state.closeWaitingModal();
 
-      await axios.post(REQUEST_ENDPOINT + 'withdraw', formData, {timeout: 60 * 60 * 1000})
-      .then((res) => {
-        toast("Withdraw success", successOption)
-        if(state.closeWaitingModal)
-          state.closeWaitingModal();
-        fetchData(state, dispatch)
-      })
-      .catch(function (error) {
-        if (error.response) {
-          toast(error.response.data.data.message, errorOption)
-        } else if (error.request) {
-          toast(error.request, errorOption);
-          fetchData(state, dispatch)
-        } else {
-          toast(error.message, errorOption);
-        }
-        if(state.closeWaitingModal)
-          state.closeWaitingModal();
-      });
+      fetchData(state, dispatch);
     }
     else {
       if(state.openFailedTxModal)

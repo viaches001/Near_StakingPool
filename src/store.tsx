@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer } from 'react'
 import { floor, floorNormalize } from './Util'
 import { amountHistory, aprHistory, userInfo, farmInfo, potInfo, coins, uCoinBalance, coinPrice } from './constants'
 import NearWalletSelector from "@near-wallet-selector/core";
+import { useWalletSelector } from './context/NearWalletSelectorContext';
 
 export type COINTYPE = 'usdc' | 'usdt' | 'dai' | 'usn' | 'wbtc' | 'eth' | 'wnear' | 'neart';
 
@@ -148,7 +149,7 @@ export const reducer = (state: AppContextInterface,  action: Action ) => {
     case ActionKind.setQualified:
       return {...state, qualified: action.payload}
     case ActionKind.setPotInfo:
-      return {...state, potInfo: action.payload}
+      return {...state, potInfo: { ...state.potInfo, ...action.payload}}
     case ActionKind.setConnectedNear:
       return {...state, connectedNear: action.payload}
     case ActionKind.setNearSelector:
@@ -253,10 +254,9 @@ export const useConnectedCoin = () => {
 }
 
 export const useConnectWallet = () => {
-  const {state, dispatch} = useStore();
-  const nearSelector = useNearSelector();
+  const { selector } = useWalletSelector();
   return () => {
-    nearSelector?.show();
+    selector?.show();
   }
 }
 
@@ -318,3 +318,4 @@ export const OpenWithdrawModal = (state:AppContextInterface , dispatch: React.Di
 //   return 109;
 // }
 
+  

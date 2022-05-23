@@ -21,7 +21,7 @@ function calcUSD(amountHistory: any, prices: any) {
   for (let i = 0; i < amountHistory.length; i++) {
     amountHistory[i].totalUSD = 0;
     coins.forEach(coin => {
-      amountHistory[i][coin.name + '_amount'] = floorNormalize(amountHistory[i][coin.name + '_amount']) + floorNormalize(amountHistory[i][coin.name + '_reward']);
+      amountHistory[i][coin.name + '_amount'] = floorNormalize(amountHistory[i][coin.name + '_deposit_amount']) + floorNormalize(amountHistory[i][coin.name + '_reward_amount']);
       if(amountHistory[i][coin.name + '_amount'] && prices[coin.name])
         amountHistory[i].totalUSD += amountHistory[i][coin.name + '_amount'] * prices[coin.name];
     })
@@ -73,180 +73,79 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     .query<CodeResult>({
       request_type: "call_function",
       account_id: POOL,
-      method_name: `get_status`,
+      method_name: `get_user_state`,
       args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
       finality: "optimistic",
     });
     status = JSON.parse(Buffer.from(res.result).toString());
-  } catch (e) { }
-
+  } catch (e) { console.log(e) }
 
   if (status) {
     if (status.amount_history !== undefined)
       dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(status.amount_history, rates) });
     if (status.farm_price !== undefined)
       dispatch({ type: ActionKind.setFarmPrice, payload: status.farm_price });
-    if (status.farm_info !== undefined)
-      dispatch({ type: ActionKind.setFarmInfo, payload: status.farm_info });
-    if (status.farm_starttime !== undefined)
-      dispatch({ type: ActionKind.setFarmStartTime, payload: status.farm_starttime/10 ** 9 });
-    if(status.pot_info != undefined)
-      dispatch({ type: ActionKind.setPotInfo, payload: status.pot_info });
+    if (status.user_farn_info !== undefined)
+      dispatch({ type: ActionKind.setFarmInfo, payload: status.user_farn_info });
+    if (status.farm_start_time !== undefined)
+      dispatch({ type: ActionKind.setFarmStartTime, payload: status.farm_start_time/10 ** 9 });
 
     coins.forEach(async coin => {
-      if (status[`apr_${coin.name}_history`] !== undefined)
-        dispatch({ type: ActionKind.setAprHistory, payload: { type: coin.name, data: status[`apr_${coin.name}_history`] } });
+      if (status[`${coin.name}_apr_history`] !== undefined) {
+        dispatch({ type: ActionKind.setAprHistory, payload: { type: coin.name, data: status[`${coin.name}_apr_history`] } });
+      }
 
-      if (status[`userinfo_${coin.name}`] !== undefined)
-        dispatch({ type: ActionKind.setUserInfoCoin, payload: { type: coin.name, data: status[`userinfo_${coin.name}`] } });
+      if (status[`${coin.name}_user_info`] !== undefined) {
+        const payload = {
+          type: coin.name,
+          data: {
+            ...status[`${coin.name}_user_info`],
+            amount: status[`${coin.name}_user_info`].deposit_amount
+          }
+        }
+        dispatch({ type: ActionKind.setUserInfoCoin, payload: payload });
+      }
 
-      if (status[`total_rewards_${coin.name}`] != undefined)
-        dispatch({ type: ActionKind.setCoinTotalRewards, payload: { type: coin.name, data: parseInt(status[`total_rewards_${coin.name}`]) } });
+      if (status[`${coin.name}_total_reward`] != undefined)
+        dispatch({ type: ActionKind.setCoinTotalRewards, payload: { type: coin.name, data: parseInt(status[`${coin.name}_total_reward`]) } });
+
+      if(status[`${coin.name}_user_pot_info`] != undefined){
+        const payload = {
+          [`qualified_${coin.name}_amount`]: status[`${coin.name}_user_pot_info`].qualified_amount,
+          [`${coin.name}_amount`]: status[`${coin.name}_user_pot_info`].unqualified_amount
+        }
+        dispatch({ type: ActionKind.setPotInfo, payload: payload });
+      }
     })
   }
   else {
     /* ------------------- start contract provider -----------------------*/
-    try {
-      const amountsProvider = await provider
-      .query<CodeResult>({
-        request_type: "call_function",
-        account_id: POOL,
-        method_name: "get_token_amount_historys",
-        args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
-        finality: "optimistic",
-      });
-      amountHistory = JSON.parse(Buffer.from(amountsProvider.result).toString());
-      amountHistory = amountHistory.map((item: any) => ({
-        time: item.time,
-        usdc_amount: item.deposit_amount,
-        usdc_reward: item.reward_amount,
-      }))
-    } catch (e) { console.log(e) }
-
-    try {
-      if(!aprHistory) aprHistory = {};
-      const res = await provider
-      .query<CodeResult>({
-        request_type: "call_function",
-        account_id: POOL,
-        method_name: `get_token_apr_history`,
-        args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
-        finality: "optimistic",
-      });
-      aprHistory['usdc'] = JSON.parse(Buffer.from(res.result).toString());
-    } catch (e) { console.log(e) }
-
-    try {
-      if(!userInfoCoin) userInfoCoin = {};
-      for(const coin of coins)
-      {
-        const res = await provider
-        .query<CodeResult>({
-          request_type: "call_function",
-          account_id: POOL,
-          method_name: `get_user_pool_info`,
-          args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
-          finality: "optimistic",
-        });
-        userInfoCoin['usdc'] = JSON.parse(Buffer.from(res.result).toString());
-        userInfoCoin['usdc'] = userInfoCoin['usdc'].map((item: any) => ({...item, amount: item.deposit_amount}))[0];
-      }
-    } catch (e) { console.log(e)}
-
-    try {
-      const res = await provider
-      .query<CodeResult>({
-        request_type: "call_function",
-        account_id: POOL,
-        method_name: `get_farm_price`,
-        args_base64: "",
-        finality: "optimistic",
-      });
-      farmPrice = JSON.parse(Buffer.from(res.result).toString());
-    } catch (e) { }
-
-    try {
-      const res = await provider
-      .query<CodeResult>({
-        request_type: "call_function",
-        account_id: POOL,
-        method_name: `get_user_farm_info`,
-        args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
-        finality: "optimistic",
-      });
-      farmInfo = JSON.parse(Buffer.from(res.result).toString());
-    } catch (e) { }
-  
-    try {
-      const res = await provider
-      .query<CodeResult>({
-        request_type: "call_function",
-        account_id: POOL,
-        method_name: `get_farm_start_time`,
-        args_base64: "",
-        finality: "optimistic",
-      });
-      farmStartTime = JSON.parse(Buffer.from(res.result).toString());
-    } catch (e) { }
-  
-    try {
-      const res = await provider
-      .query<CodeResult>({
-        request_type: "call_function",
-        account_id: POOL,
-        method_name: `get_user_pot_info`,
-        args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
-        finality: "optimistic",
-      });
-      portInfo = JSON.parse(Buffer.from(res.result).toString());
-      portInfo = portInfo.map((item: any) => ({...item, amount: item.unqualified_amount}))
-    } catch (e) { }
-
-    try {
-      if(!coin_total_rewards) coin_total_rewards = {};
-      const res = await provider
-      .query<CodeResult>({
-        request_type: "call_function",
-        account_id: POOL,
-        method_name: `get_token_total_reward`,
-        args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
-        finality: "optimistic",
-      });
-      coin_total_rewards['usdc'] = JSON.parse(Buffer.from(res.result).toString());
-      
-    } catch (e) { console.log(e)}
-  
-    /* ---------------end contract provider-----------------------*/
-
     // try {
     //   const amountsProvider = await provider
     //   .query<CodeResult>({
     //     request_type: "call_function",
     //     account_id: POOL,
-    //     method_name: "get_amount_history",
-    //     args_base64: "",
+    //     method_name: "get_token_amount_historys",
+    //     args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
     //     finality: "optimistic",
     //   });
     //   amountHistory = JSON.parse(Buffer.from(amountsProvider.result).toString());
     //   console.log(amountHistory)
     // } catch (e) { console.log(e) }
-  
+
     // try {
     //   if(!aprHistory) aprHistory = {};
-    //   for(const coin of coins)
-    //   {
-    //     const res = await provider
-    //     .query<CodeResult>({
-    //       request_type: "call_function",
-    //       account_id: POOL,
-    //       method_name: `get_${coin.name}_apr_history`,
-    //       args_base64: "",
-    //       finality: "optimistic",
-    //     });
-    //     aprHistory[coin.name] = JSON.parse(Buffer.from(res.result).toString());
-    //   }
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_token_apr_history`,
+    //     args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
+    //     finality: "optimistic",
+    //   });
+    //   aprHistory['usdc'] = JSON.parse(Buffer.from(res.result).toString());
     // } catch (e) { console.log(e) }
-  
+
     // try {
     //   if(!userInfoCoin) userInfoCoin = {};
     //   for(const coin of coins)
@@ -255,14 +154,15 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     //     .query<CodeResult>({
     //       request_type: "call_function",
     //       account_id: POOL,
-    //       method_name: `get_${coin.name}_user_info`,
+    //       method_name: `get_user_pool_info`,
     //       args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
     //       finality: "optimistic",
     //     });
-    //     userInfoCoin[coin.name] = JSON.parse(Buffer.from(res.result).toString());
+    //     userInfoCoin['usdc'] = JSON.parse(Buffer.from(res.result).toString());
+    //     userInfoCoin['usdc'] = userInfoCoin['usdc'].map((item: any) => ({...item, amount: item.deposit_amount}))[0];
     //   }
-    // } catch (e) { }
-  
+    // } catch (e) { console.log(e)}
+
     // try {
     //   const res = await provider
     //   .query<CodeResult>({
@@ -274,13 +174,13 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     //   });
     //   farmPrice = JSON.parse(Buffer.from(res.result).toString());
     // } catch (e) { }
-  
+
     // try {
     //   const res = await provider
     //   .query<CodeResult>({
     //     request_type: "call_function",
     //     account_id: POOL,
-    //     method_name: `get_farm_info`,
+    //     method_name: `get_user_farm_info`,
     //     args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
     //     finality: "optimistic",
     //   });
@@ -292,7 +192,7 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     //   .query<CodeResult>({
     //     request_type: "call_function",
     //     account_id: POOL,
-    //     method_name: `get_farm_starttime`,
+    //     method_name: `get_farm_start_time`,
     //     args_base64: "",
     //     finality: "optimistic",
     //   });
@@ -304,34 +204,49 @@ export async function fetchData(state: AppContextInterface, dispatch: React.Disp
     //   .query<CodeResult>({
     //     request_type: "call_function",
     //     account_id: POOL,
-    //     method_name: `get_pot_info`,
+    //     method_name: `get_user_pot_info`,
     //     args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
     //     finality: "optimistic",
     //   });
     //   portInfo = JSON.parse(Buffer.from(res.result).toString());
+    //   portInfo = portInfo.map((item: any) => ({...item, amount: item.unqualified_amount}))
     // } catch (e) { }
-    
-    if (amountHistory !== undefined)
-      dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(amountHistory, rates) });
-    if (farmPrice !== undefined)
-      dispatch({ type: ActionKind.setFarmPrice, payload: farmPrice });
-    if (farmInfo !== undefined)
-      dispatch({ type: ActionKind.setFarmInfo, payload: farmInfo });
-    if (farmStartTime !== undefined)
-      dispatch({ type: ActionKind.setFarmStartTime, payload: farmStartTime });
-    if(portInfo != undefined)
-      dispatch({ type: ActionKind.setPotInfo, payload: portInfo });
-  
-    coins.forEach(async coin => {
-      if (aprHistory[coin.name] !== undefined)
-        dispatch({ type: ActionKind.setAprHistory, payload: { type: coin.name, data: aprHistory[coin.name] } });
-  
-      if (userInfoCoin[coin.name] !== undefined)
-        dispatch({ type: ActionKind.setUserInfoCoin, payload: { type: coin.name, data: userInfoCoin[coin.name] } });
 
-      if (coin_total_rewards[coin.name] !== undefined)
-        dispatch({ type: ActionKind.setCoinTotalRewards, payload: { type: coin.name, data: coin_total_rewards[coin.name] } });
-    })
+    // try {
+    //   if(!coin_total_rewards) coin_total_rewards = {};
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_token_total_reward`,
+    //     args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
+    //     finality: "optimistic",
+    //   });
+    //   coin_total_rewards['usdc'] = JSON.parse(Buffer.from(res.result).toString());
+      
+    // } catch (e) { console.log(e)}
+  
+    // if (amountHistory !== undefined)
+    //   dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(amountHistory, rates) });
+    // if (farmPrice !== undefined)
+    //   dispatch({ type: ActionKind.setFarmPrice, payload: farmPrice });
+    // if (farmInfo !== undefined)
+    //   dispatch({ type: ActionKind.setFarmInfo, payload: farmInfo });
+    // if (farmStartTime !== undefined)
+    //   dispatch({ type: ActionKind.setFarmStartTime, payload: farmStartTime });
+    // if(portInfo != undefined)
+    //   dispatch({ type: ActionKind.setPotInfo, payload: portInfo });
+  
+    // coins.forEach(async coin => {
+    //   if (aprHistory[coin.name] !== undefined)
+    //     dispatch({ type: ActionKind.setAprHistory, payload: { type: coin.name, data: aprHistory[coin.name] } });
+  
+    //   if (userInfoCoin[coin.name] !== undefined)
+    //     dispatch({ type: ActionKind.setUserInfoCoin, payload: { type: coin.name, data: userInfoCoin[coin.name] } });
+
+    //   if (coin_total_rewards[coin.name] !== undefined)
+    //     dispatch({ type: ActionKind.setCoinTotalRewards, payload: { type: coin.name, data: coin_total_rewards[coin.name] } });
+    // })
   }
 
   dispatch({ type: ActionKind.setLoading, payload: false });

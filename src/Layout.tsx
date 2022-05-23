@@ -42,6 +42,10 @@ const Layout = () => {
       fetchAll()
   }, [selector])
 
+  useEffect(() => {
+    console.log(state)
+  }, [state])
+
   return (
     <QueryClientProvider client={queryClient} key={networkName}>
       <Flex
