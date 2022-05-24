@@ -1,31 +1,34 @@
 import React, { FunctionComponent } from 'react';
 import { VStack, Stack, Text, Divider, HStack, Image, Flex, Button } from '@chakra-ui/react'
 import { Grid, GridItem, Tooltip } from '@chakra-ui/react'
-
-// import LunaIcon from './../../../assets/Luna.svg'
 import {
   OpenDepositModal,
   OpenWithdrawModal,
   useStore,
-  useLUNAApr,
-  useLUNADeposited,
+  useCoinApr,
+  useCoinDeposited,
   useExchangeRate,
 } from '../../../store';
 import AnimationNumber from '../../Components/AnimationNumber';
 import { floor, floorNormalize } from '../../../Util';
+import { useConnectedCoin, useConnectWallet } from '../../../store';
 
 interface Props {
-  data: any
+  coin: any
 }
 
 const DepositPanel: FunctionComponent<Props> = (props) => {
   const { state, dispatch } = useStore();
-  const apr = useLUNAApr();
-  const rate = useExchangeRate();
-
-  const lunaDeposited = useLUNADeposited() + floorNormalize(state.userInfoLuna.reward_amount);
-  const amount = lunaDeposited * rate;
-  const data = props.data;
+  const aprs = useCoinApr();
+  const rates = useExchangeRate();
+  const coin = props.coin;
+  const rate = rates[coin.name];
+  
+  const coinDeposited = (useCoinDeposited()[coin.name] + floorNormalize(state.userInfoCoin[coin.name].reward_amount)) || 0;
+  const apr = floor(aprs[coin.name]);
+  const amount = coinDeposited * rate || 0;
+  const connectedCoin = useConnectedCoin();
+  const connectWallet = useConnectWallet();
 
   return (
     <VStack
@@ -50,12 +53,12 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
             spacing={'27px'}
             align={'center'}
             justify={'left'}
-            display={{ sm: 'none', md: 'none', lg: 'flex' }}
+            display={'flex'}
           >
             <Image 
               borderRadius='full'
               boxSize='36px'
-              src={data.img}
+              src={coin.img}
               alt='Dan Abramov'
               mt={'10px'}
             />
@@ -66,20 +69,20 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
                 lineHeight={'36px'}
                 color={'white'}
               >
-                {data.name}
+                {coin.currency}
               </Text>
               <Text
                 fontSize={'13px'}
                 fontWeight={'400'}
                 lineHeight={'15.6px'}
               >
-                 {data.name}
+                 {coin.blockchain}
               </Text>
             </VStack>
           </HStack>
         </GridItem>
         <GridItem w={'100%'} h={'100px'}>
-          <VStack w={'100%'} h={'100%'} align={'center'} justify={'center'} >
+          <VStack w={'100%'} h={'100%'} align={'left'} justify={'center'} >
             <Text
               fontSize={'13px'}
               fontWeight={'400'}
@@ -87,22 +90,15 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
             >
               Saving Balance
             </Text>
-            {data.currency == 'usd' && <Text
+            <Text
               fontSize={'13px'}
               fontWeight={'400'}
               lineHeight={'15.6px'}
             >
-              ${data.balance == 0? '000,000.00': <AnimationNumber value={data.balance}/>}
-            </Text>}
-            {data.currency != 'usd' && <Text
-              fontSize={'13px'}
-              fontWeight={'400'}
-              lineHeight={'15.6px'}
-            >
-              ${data.balance == 0? '000,000.00': <AnimationNumber value={data.balance}/>}&nbsp;{data.currency}
+              {coinDeposited == 0? '000,000.00': <AnimationNumber value={coinDeposited}/>}&nbsp;{coin.currency}
               <br></br>
-              ${data.balance == 0? '000,000.00': <AnimationNumber value={data.balance}/>}&nbsp;USD&nbsp;value
-            </Text>}
+              ${amount == 0? '000,000.00': <AnimationNumber value={amount}/>}&nbsp;USD&nbsp;Value
+            </Text>
           </VStack>
         </GridItem>
         <GridItem w={'100%'} h={'100px'}>
@@ -119,12 +115,12 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
               fontWeight={'400'}
               lineHeight={'15.6px'}
             >
-              <AnimationNumber value={data.apy} />%
+              <AnimationNumber value={apr} />%
             </Text>
           </Flex>
         </GridItem>
       </Grid>
-      {data.available && <Stack
+      {coin.available && <Stack
         direction={{ sm: 'column', md: 'column', lg: 'row' }}
         w={'100%'}
         h={'100%'}
@@ -137,7 +133,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
           h={'50px'}
           background={'#493C3C'}
           rounded={'25px'}
-          onClick={() => OpenDepositModal(state, dispatch, data.name.toLocaleLowerCase())}
+          onClick={!connectedCoin[coin.name]? connectWallet: () => OpenDepositModal(state, dispatch, coin.name)}
         >
           <Text
             fontSize={'14px'}
@@ -145,7 +141,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
             lineHeight={'10.8px'}
             color={'white'}
           >
-            Deposit
+            {connectedCoin[coin.name]? 'Deposit': 'Connect Wallet'}
           </Text>
         </Button>
         <Button
@@ -154,7 +150,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
           background={'#212121'}
           rounded={'25px'}
           border={'solid 1px #CEBFBF'}
-          onClick={() => OpenWithdrawModal(state, dispatch, data.name)}
+          onClick={!connectedCoin[coin.name]? connectWallet: () => OpenWithdrawModal(state, dispatch, coin.name)}
         >
           <Text
             fontSize={'14px'}
@@ -162,11 +158,11 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
             lineHeight={'10px'}
             color={'#CEBFBF'}
           >
-            Withdraw
+             {connectedCoin[coin.name]? 'Withdraw': 'Connect Wallet'}
           </Text>
         </Button>
       </Stack>}
-      {!data.available && <Stack
+      {!coin.available && <Stack
         direction={{ sm: 'column', md: 'column', lg: 'row' }}
         w={'100%'}
         h={'100%'}
@@ -180,7 +176,7 @@ const DepositPanel: FunctionComponent<Props> = (props) => {
           background={'#212121'}
           rounded={'25px'}
           border={'solid 1px #CEBFBF'}
-          onClick={() => OpenDepositModal(state, dispatch, data.name.toLocaleLowerCase())}
+          onClick={() => {}}
         >
           <Text
             fontSize={'14px'}

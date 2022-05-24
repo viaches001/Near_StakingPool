@@ -6,20 +6,23 @@ import {
   OpenDepositModal, 
   OpenWithdrawModal, 
   useStore, 
-  useUSTDeposited, 
-  useLUNADeposited,
+  useCoinDeposited, 
   useExchangeRate
 } from '../../../store';
 import AnimationNumber from '../../Components/AnimationNumber';
 import { floorNormalize } from '../../../Util';
+import { coins } from '../../../constants';
 
 const Total: FunctionComponent = (props) => {
   const {state, dispatch} = useStore();
-  const rate = useExchangeRate();
+  const rates = useExchangeRate();
+  const coinDeposited = useCoinDeposited();
 
-  const ustDeposited = useUSTDeposited() + floorNormalize(state.userInfoUst.reward_amount);
-  const lunaDeposited = useLUNADeposited() * rate + floorNormalize(state.userInfoLuna.reward_amount * rate);
-  const total = ustDeposited + lunaDeposited;
+  let total = 0;
+  coins.forEach(coin => {
+    const deposited = coinDeposited[coin.name] * rates[coin.name] + floorNormalize(state.userInfoCoin[coin.name].reward_amount * rates[coin.name]);
+    total += deposited;
+  })
 
   return (
     <VStack 
@@ -41,7 +44,7 @@ const Total: FunctionComponent = (props) => {
             TOTAL BALANCE
           </Text>
           <Tooltip 
-            label="Total value of your UST/Luna deposits including earnings calculated in UST" 
+            label="Total value of your all deposits including earnings calculated in UST" 
             background={'#C4C4C4'} hasArrow 
             placement='top-start' 
             color={'black'}

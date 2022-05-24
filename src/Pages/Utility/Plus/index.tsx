@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { VStack, HStack, Stack, Flex, Text, Image, Link, Center, Divider, Button } from '@chakra-ui/react'
 
-import { OpenDepositModal, useStore } from '../../../store';
+// import { OpenDepositModal, useStore } from '../../../store';
 import Left from './Left';
 import Qualifying from './Qualifying';
 
 const Plus: FunctionComponent = (props) => {
-  const { state, dispatch } = useStore();
+  // const { state, dispatch } = useStore();
   return (
     <VStack w={'100%'} align={'baseline'}>
       <Text

@@ -3,20 +3,24 @@ import { VStack, HStack, Stack, Flex, Text, Image, Tooltip, Center, Divider, But
 
 import AnimationNumber from '../../../Components/AnimationNumber';
 import Warning from '../../../../assets/Warning.svg'
-import { OpenDepositModal, useStore, useUSTDeposited, useLUNADeposited, useExchangeRate } from '../../../../store';
+import { OpenDepositModal, useStore, useCoinDeposited, useExchangeRate } from '../../../../store';
+import { coins } from '../../../../constants';
 
 const Projected: FunctionComponent = (props) => {
   const { state, dispatch } = useStore();
-  const ustDeposited = useUSTDeposited();
-  const lunaDeposited = useLUNADeposited();
-  const rate = useExchangeRate();
+  const coinDeposited = useCoinDeposited();
+  const rates = useExchangeRate();
 
-  const total = ustDeposited + lunaDeposited * rate;
+  let total = 0;
+  coins.forEach(coin => {
+    total += coinDeposited[coin.name] * rates[coin.name];
+  })
+
   const dayReward = total / 1000 * 24;
 
   const remain = 60 - Math.floor((Date.now() / 1000 - state.farmStartTime) / 60 / 60 / 24);
 
-  const expected = Math.floor(dayReward * remain);
+  const expected = Math.floor(dayReward * remain * 100) / 100;
 
   return (
     <VStack w={'100%'} color={'#CEBFBF'} spacing={'12px'}>
@@ -26,7 +30,7 @@ const Projected: FunctionComponent = (props) => {
           fontWeight={'860'}
           lineHeight={'24px'}
         >
-          YOUR PROJECTED SHARE OF TerraT TOKENS
+          YOUR PROJECTED SHARE OF NearT TOKENS
         </Text>
         <Tooltip
           label="Your projected share with your current deposit value until the end of the farming event"
@@ -50,7 +54,7 @@ const Projected: FunctionComponent = (props) => {
           fontWeight={'860'}
           lineHeight={'36px'}
         >
-          TerraT
+          NearT
         </Text>
       </HStack>
     </VStack>

@@ -4,12 +4,11 @@ import { Dispatch, SetStateAction } from "react";
 
 import Tab from './Tab';
 import {
-  useUSTDeposited,
-  useLUNADeposited,
+  useCoinDeposited,
   useExchangeRate,
-  useUSTApr,
-  useLUNAApr
+  useCoinApr,
 } from '../../../../store';
+import { coins } from '../../../../constants';
 
 interface Props {
   setInterest: Dispatch<SetStateAction<number>>,
@@ -26,16 +25,16 @@ const DateTimeTab: FunctionComponent<Props> = ({setInterest}) => {
     case 'day': rate = 1 / 365; break;
   }
 
-  const ustDeposited = useUSTDeposited();
-  const lunaDeposited = useLUNADeposited();
-  const exchangeRate = useExchangeRate();
-  const ustApr = useUSTApr();
-  const lunaApr = useLUNAApr();
+  const coinDeposited = useCoinDeposited();
+  const exchangeRates = useExchangeRate();
+  const coinAprs = useCoinApr();
 
-  const ustValue = ustDeposited * ustApr / 100 * rate;
-  const lunaValue = lunaDeposited * exchangeRate * lunaApr / 100 * rate;
+  let value = 0;
+  coins.forEach(coin => {
+    value += coinDeposited[coin.name] * exchangeRates[coin.name] * coinAprs[coin.name] / 100 * rate;
+  })
 
-  setInterest(Math.floor(ustValue + lunaValue));
+  setInterest(Math.floor(value));
 
   return (
     <Flex

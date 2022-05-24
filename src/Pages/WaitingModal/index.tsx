@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Stack, Flex, HStack, Button, Text, Divider, Spinner } from '@chakra-ui/react'
-import { Deposit, MsgExecuteContract, WasmAPI, Coin } from '@terra-money/terra.js'
+import { Stack, Flex, HStack, Button, Text, Divider, Image } from '@chakra-ui/react'
 import {
   Modal,
   ModalOverlay,
@@ -9,7 +8,7 @@ import {
   useDisclosure
 } from '@chakra-ui/react'
 import ReactLoading from 'react-loading';
-
+import { nearWalletIcon } from '../../context/icons';
 import { shortenAddress } from '../../Util';
 import { useStore } from '../../store';
 
@@ -29,12 +28,13 @@ const WaitingModal: FunctionComponent<Props> = ({ isOpen, onClose }) => {
         rounded={'25px'}
         w={{ sm: '80%', md: '562px', lg: '562px' }}
         minW={{ sm: '80%', md: '562px', lg: '562px' }}
-        h={'453px'}
+        h={'353px'}
         px={{ sm: '10px', md: '47px', lg: '47px' }}
         py={'39px'}
         alignItems={'center'}
       >
-        <ReactLoading type={'bars'} color={'#F9D85E'} height={200} width={200} />
+        {/* <ReactLoading type={'bars'} color={'#F9D85E'} height={200} width={200} /> */}
+        <Image src={'/assets/near-wallet-white.png'} height={'100px'} width={'100px'} color={'white'}></Image>
         <Text
           mt={'30px'}
           fontSize={'24px'}

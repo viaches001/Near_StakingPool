@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { HStack, Stack, VStack, Flex, Text, Image, Link, Center, Divider } from '@chakra-ui/react'
 
-import { useLCD } from '../../store';
+import { useNearSelector } from '../../store';
 
 import GreenLamp from './../../assets/GreenLamp.svg'
 import Twitter from './../../assets/Twitter.svg'
@@ -9,16 +9,16 @@ import Subtract from './../../assets/Subtract.svg'
 import Medium from './../../assets/Medium.svg'
 
 const Footer: FunctionComponent = (props) => {
-  const lcd = useLCD();
+  const selector = useNearSelector();
   const [blockHeight, setBlockHeight] = useState(0); 
   const [timer, setTimer] = useState(0);
 
   useEffect( () => {
     async function getLatestHash() {
-      await lcd.tx.txInfosByHeight(undefined)
-      .then((e) => {
-        setBlockHeight(e[0].height);
-      })
+      // await lcd.tx.txInfosByHeight(undefined)
+      // .then((e) => {
+      //   setBlockHeight(e[0].height);
+      // })
     }
     getLatestHash();
     // if(timer !== 0){
@@ -26,7 +26,7 @@ const Footer: FunctionComponent = (props) => {
     // }
     // let res = window.setInterval(getLatestHash, 10000);
     // setTimer(res);
-  }, [lcd]);
+  }, [selector]);
 
   return (
     <Flex

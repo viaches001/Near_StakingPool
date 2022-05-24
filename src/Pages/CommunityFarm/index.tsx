@@ -1,10 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Stack, VStack, Flex, Button } from '@chakra-ui/react'
-import { MsgExecuteContract, WasmAPI, Coin, LCDClient, Fee } from '@terra-money/terra.js'
-import { ConnectedWallet } from '@terra-money/wallet-provider'
+import { VStack } from '@chakra-ui/react'
 
 import { POOL } from '../../constants';
-import { useStore, useLCD } from '../../store';
+import { useStore, useNearSelector } from '../../store';
 import {
   Table,
   Thead,
@@ -16,29 +14,47 @@ import {
   TableCaption,
   TableContainer,
 } from '@chakra-ui/react'
+import { providers } from "near-api-js";
+import { CodeResult } from "near-api-js/lib/providers/provider";
 
 const CommunityFarm: FunctionComponent = (props) => {
   const {state, dispatch} = useStore();
   const [farmInfo, setFarmInfo] = useState<any[]>();
-  const lcd = useLCD();
-  const api = new WasmAPI(lcd.apiRequester);
+  const selector = useNearSelector();
 
   useEffect( () => {
     const fetchData = async () => {
-      try {
-        let res: any[] = await api.contractQuery(
-          POOL,
-          {
-            get_all_farm_info: { }
-          });
+      if(!selector) return;
+      
+      const { nodeUrl } = selector.network;
+      const provider = new providers.JsonRpcProvider({ url: nodeUrl });
+
+      // try {
+      //   let res: any[] = await api.contractQuery(
+      //     POOL,
+      //     {
+      //       get_all_farm_info: { }
+      //     });
         
-        setFarmInfo(res);
-      } catch (e) {
-        console.log(e)
-      }
+      //   setFarmInfo(res);
+      // } catch (e) {
+      //   console.log(e)
+      // }
+
+
+      // amountHistory = await provider
+      // .query<CodeResult>({
+      //   request_type: "call_function",
+      //   account_id: selector.getContractId(),
+      //   method_name: "getMessages",
+      //   args_base64: "",
+      //   finality: "optimistic",
+      // });
+
+      // amountHistory = JSON.parse(Buffer.from(amountHistory.result).toString());
     }
     fetchData();
-  }, [lcd])
+  }, [selector])
 
   return (
     <VStack 

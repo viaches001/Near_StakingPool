@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Stack, VStack, Flex, HStack, Button, Text, Divider, Image, Checkbox } from '@chakra-ui/react'
-import { Deposit, MsgExecuteContract, WasmAPI, Coin } from '@terra-money/terra.js'
 import axios from 'axios';
 import {
   Modal,
@@ -11,48 +10,45 @@ import {
 import {toast} from 'react-toastify'
 import {MdWarningAmber, MdInfoOutline} from 'react-icons/md'
 
-import { useStore, useWallet, useLCD, ActionKind } from '../../../store';
+import { useStore, useNearSelector, useExchangeRate, ActionKind } from '../../../store';
 import {estimateSend, fetchData, sleep} from '../../../Util';
-import { successOption, errorOption, REQUEST_ENDPOINT, VUST, VLUNA, MOTHER_WALLET } from '../../../constants';
+import { successOption, errorOption, REQUEST_ENDPOINT, POOL } from '../../../constants';
 import CustomCheckbox from './CustomCheckbox';
+import { providers, utils } from "near-api-js";
+import { useWalletSelector } from '../../../context/NearWalletSelectorContext';
+import { CodeResult } from "near-api-js/lib/providers/provider";
 
 interface Props{
   isOpen: boolean,
   onClose: () => void,
   onCloseParent: () => void,
-  amount: string,
+  amount: string
 }
 const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onCloseParent}) => {
   const [checked, setChecked] = useState(false);
   const {state, dispatch} = useStore();
-  const wallet = useWallet();
-  const lcd = useLCD();
+  const selector = useNearSelector();
   const coinType = state.coinType;
+  const { accountId } = useWalletSelector();
+  const rates = useExchangeRate();
 
   const withdraw = async () => {
-    if(checked == false || wallet == undefined)
+    if(checked == false || selector == undefined)
       return;
       
-    let val = Math.floor(parseFloat(amount) * 10 ** 6);
-    let withdraw_msg = new MsgExecuteContract(
-      wallet?.walletAddress,
-      coinType == 'usdc' ? VUST : VLUNA,
-      {
-        "increase_allowance": {
-            "spender": `${MOTHER_WALLET}`,
-            "amount": `${val}`,
-            "expires": {
-                "never": {}
-            }
-        }
-      },
-      {}
-    );
-    let res = await estimateSend(wallet, lcd, [withdraw_msg], "Success request withdraw", "request withdraw");
-    if(res)
-    {
-      dispatch({type: ActionKind.setTxhash, payload: res});
+    // let val = Math.floor(parseFloat(amount) * 10 ** 6);
+    let val = utils.format.parseNearAmount(amount);
 
+    const methodName = 'try_withdraw';
+    // const args = { token_name: "usdc", amount: String(val), token_prices: [{name: "usdc", price: String(rates['usdc'])}] }
+    const args = { token_name: "usdc", amount: '900', token_prices: [{name: "usdc", price: '2'}] }
+
+    let txHash:any = await estimateSend(selector, methodName, args);
+    txHash = '75wJNy3rFiFT6CnZDNZ54mEJxBSZKsR8EnjfHWd2uTXc';
+    if(txHash)
+    {
+      dispatch({type: ActionKind.setTxhash, payload: txHash});
+      
       onClose();
       onCloseParent();
       if(state.openWaitingModal)
@@ -61,47 +57,34 @@ const WarningModal: FunctionComponent<Props> = ({isOpen, onClose, amount, onClos
       let count = 10;
       let height = 0;
       while (count > 0) {
-        await lcd.tx.txInfo(res)
-          // eslint-disable-next-line no-loop-func
-          .then((e) => {
-            if (e.height > 0) {
-              toast.dismiss();
-              toast("Success request withdraw", successOption);
-              height = e.height;
-            }
-          })
-          .catch((e) => {})
+        const { nodeUrl } = selector.network;
+        const provider = new providers.JsonRpcProvider({ url: nodeUrl });
+        const response = await provider.txStatus(txHash, accountId as string);
+        console.log(response)
 
-        if (height > 0) break;
+        // try {
+        //   if (e.height > 0) {
+        //     toast.dismiss();
+        //     toast("Success request withdraw", successOption);
+        //     height = e.height;
+        //   }
+        // }
+        // catch(e) {}
+
+        // if (height > 0) break;
 
         await sleep(1000);
         count--;
       }
 
-      var formData = new FormData()
-      formData.append('wallet', wallet.walletAddress.toString());
-      formData.append('coinType', coinType)
-      formData.append('amount', val.toString())
+      if(state.closeWaitingModal)
+        state.closeWaitingModal();
 
-      await axios.post(REQUEST_ENDPOINT + 'withdraw', formData, {timeout: 60 * 60 * 1000})
-      .then((res) => {
-        toast("Withdraw success", successOption)
-        if(state.closeWaitingModal)
-          state.closeWaitingModal();
-        fetchData(state, dispatch)
-      })
-      .catch(function (error) {
-        if (error.response) {
-          toast(error.response.data.data.message, errorOption)
-        } else if (error.request) {
-          toast(error.request, errorOption);
-          fetchData(state, dispatch)
-        } else {
-          toast(error.message, errorOption);
-        }
-        if(state.closeWaitingModal)
-          state.closeWaitingModal();
-      });
+      fetchData(state, dispatch);
+    }
+    else {
+      if(state.openFailedTxModal)
+        state.openFailedTxModal();
     }
   }
 

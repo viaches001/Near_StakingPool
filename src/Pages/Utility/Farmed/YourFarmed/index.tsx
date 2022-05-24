@@ -7,7 +7,7 @@ import { OpenDepositModal, useStore } from '../../../../store';
 const YourFarmed: FunctionComponent = (props) => {
   const {state, dispatch} = useStore();
   const farmInfo = state.farmInfo;
-  const amount = farmInfo.amount;
+  const amount = farmInfo.amount/10 ** 4;
 
   return (
     <VStack w={'100%'} spacing={'12px'}>
@@ -17,7 +17,7 @@ const YourFarmed: FunctionComponent = (props) => {
           fontWeight={'860'}
           lineHeight={'24px'}
         >
-          YOUR FARMED TerraT TOKENS
+          YOUR FARMED NearT TOKENS
         </Text>
         <Tooltip 
           label="Recalculated once a day" 

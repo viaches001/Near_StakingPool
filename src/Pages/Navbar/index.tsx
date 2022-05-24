@@ -24,6 +24,7 @@ const Navbar: FunctionComponent = (props) => {
         <Tab id={'mypage'} >MY PAGE</Tab>
         <Tab id={'earn'} >EARN</Tab>
         <Tab id={'utility'} >UTILITY+</Tab>
+        <Tab id={'terms'} >Terms of Service</Tab>
       </Stack>
       <ConnectWallet />
     </Flex>

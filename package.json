@@ -6,6 +6,9 @@
     "@chakra-ui/react": "^1.8.7",
     "@emotion/react": "11",
     "@emotion/styled": "11",
+    "@near-wallet-selector/core": "^3.0.2",
+    "@near-wallet-selector/near-wallet": "^3.0.2",
+    "@near-wallet-selector/sender": "^3.0.2",
     "@reduxjs/toolkit": "^1.5.1",
     "@terra-money/terra.js": "^3.0.8",
     "@terra-money/wallet-provider": "^3.8.0",
@@ -15,6 +18,7 @@
     "@types/classnames": "^2.3.1",
     "@types/crypto-js": "^4.1.1",
     "@types/jest": "^24.0.0",
+    "@types/markdown-it": "^12.2.3",
     "@types/node": "^12.0.0",
     "@types/numeral": "^2.0.2",
     "@types/qrcode.react": "^1.0.2",
@@ -33,6 +37,11 @@
     "buffer": "^6.0.3",
     "chart.js": "^3.7.1",
     "framer-motion": "3.10.6",
+    "html-react-parser": "^1.4.12",
+    "markdown": "^0.5.0",
+    "markdown-it": "^13.0.1",
+    "near-api-js": "^0.44.2",
+    "near-wallet-selector": "^2.1.0",
     "process": "^0.11.10",
     "react": "^18.0.0",
     "react-countup": "^6.2.0",
@@ -45,6 +54,7 @@
     "react-scripts": "4.0.3",
     "react-toastify": "^8.2.0",
     "recharts": "^2.1.9",
+    "serve": "^13.0.2",
     "styled-components": "^5.3.5",
     "typescript": "~4.1.5",
     "web-vitals": "^2.1.4"
@@ -52,6 +62,7 @@
   "scripts": {
     "start": "set PORT=3006 && react-scripts start",
     "build": "react-scripts build",
+    "deploy": "serve -s build -l 4000",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -71,6 +82,7 @@
     ]
   },
   "devDependencies": {
-    "@types/styled-components": "^5.1.24"
+    "@types/styled-components": "^5.1.24",
+    "react-error-overlay": "^6.0.9"
   }
 }

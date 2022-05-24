@@ -2,20 +2,24 @@ import React, { FunctionComponent } from 'react';
 import { VStack, HStack, Stack, Flex, Text, Image, Link, Center, Tooltip, Button } from '@chakra-ui/react'
 
 import { MdSwapHoriz } from 'react-icons/md'
-import { useUSTBalance, useUSTDeposited, useLUNADeposited, useStore, useExchangeRate } from '../../../../store';
+import { useCoinBalance, useCoinDeposited, useStore, useExchangeRate } from '../../../../store';
 import Warning from "./../../../../assets/Warning.svg"
 import AnimationNumber from '../../../Components/AnimationNumber';
 import { useNavigate } from 'react-router-dom';
 import { floorNormalize, floor } from '../../../../Util';
+import { coins } from '../../../../constants';
 
 const Total: FunctionComponent = (props) => {
   const { state, dispatch } = useStore();
-  const ustBalance = useUSTBalance();
-  const rate = useExchangeRate();
+  const coinBalances = useCoinBalance();
+  const rates = useExchangeRate();
+  const coinDeposited = useCoinDeposited();
 
-  const ustDeposited = useUSTDeposited() + floorNormalize(state.userInfoUst.reward_amount);
-  const lunaDeposited = useLUNADeposited() * rate + floorNormalize(state.userInfoLuna.reward_amount * rate);
-  const total = ustBalance + ustDeposited + lunaDeposited;
+  let total = 0;
+  coins.forEach(coin => {
+    const deposited = coinDeposited[coin.name] * rates[coin.name] + floorNormalize(state.userInfoCoin[coin.name].reward_amount * rates[coin.name]);
+    total += coinBalances[coin.name] * rates[coin.name] + deposited;
+  })
 
   return (
     <HStack justify={"space-between"} w={'100%'} align={'baseline'}>
@@ -29,7 +33,7 @@ const Total: FunctionComponent = (props) => {
             TOTAL VALUE
           </Text>
           <Tooltip
-            label="Total value of UST/Luna deposits, payed interest, and UST Wallet Balance"
+            label="Total value of all deposits, payed interest, and USD Wallet Balance"
             background={'#C4C4C4'}
             color={'black'} hasArrow
             placement='top-start'
@@ -54,7 +58,8 @@ const Total: FunctionComponent = (props) => {
           </Text>
         </HStack>
       </VStack>
-      <a href="https://app.terraswap.io/swap?to=&type=swap&from=uluna" target={'_blank'} rel="noreferrer">
+      {/* <a href="https://app.terraswap.io/swap?to=&type=swap&from=uluna" target={'_blank'} rel="noreferrer"> */}
+      <a href="https://app.ref.finance/" target={'_blank'} rel="noreferrer">
         <Button w={'92px'} h={'25px'} background={'none'} rounded={'25px'} borderColor={'white'} variant='outline'>
           <MdSwapHoriz />
           <Text

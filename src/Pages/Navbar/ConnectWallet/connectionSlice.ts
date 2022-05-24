@@ -7,15 +7,11 @@ import {
 export interface ConnectionState {
   wallet: ConnectedWallet | undefined;
   connected: Boolean;
-  ustBalance: number | undefined;
-  lunaBalance: number | undefined;
 }
 
 const initialState: ConnectionState = {
   wallet: undefined,
-  connected: false,
-  ustBalance: 0,
-  lunaBalance: 0
+  connected: false
 };
 
 export const connectionSlice = createSlice({
@@ -29,19 +25,11 @@ export const connectionSlice = createSlice({
     setConnection: (state, action: PayloadAction<Boolean>) => {
       state.connected = action.payload;
     },
-    setUstBalance: (state, action: PayloadAction<number | undefined>) => {
-      state.ustBalance = action.payload;
-    },
-    setLunaBalance: (state, action: PayloadAction<number | undefined>) => {
-      state.lunaBalance = action.payload;
-    },
   },
 });
 
-export const { setWallet, setConnection, setUstBalance, setLunaBalance } = connectionSlice.actions;
+export const { setWallet, setConnection } = connectionSlice.actions;
 
 export const selectWallet = (state: RootState) => state.connection.wallet;
 export const selectConnected = (state: RootState) => state.connection.connected;
-export const selectUstBalance = (state: RootState) => state.connection.ustBalance;
-export const selectLunaBalance = (state: RootState) => state.connection.lunaBalance;
 export default connectionSlice.reducer;

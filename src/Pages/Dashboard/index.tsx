@@ -3,9 +3,9 @@ import { Stack, VStack, Flex, Button } from '@chakra-ui/react'
 
 import Title from './Title'
 import Overview from './Overview';
+import CoinTable from './CoinTable';
 import How from './How';
 import TVL from './TVL';
-import CoinTable from './CoinTable';
 
 const Dashboard: FunctionComponent = (props) => {
   return (

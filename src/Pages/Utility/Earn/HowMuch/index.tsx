@@ -15,7 +15,7 @@ const HowMuch: FunctionComponent = (props) => {
           fontWeight={'860'}
           lineHeight={'24px'}
         >
-          HOW MUCH TerraT CAN I EARN?
+          HOW MUCH NearT CAN I EARN?
         </Text>
         <a href="https://app.gitbook.com/s/kngrjQ3XHOHWXNeVNLmt/tt-protocol/community-farming" target={'_blank'} rel="noreferrer" >
           <Image src={Warning} w={'13px'}/>
@@ -34,7 +34,7 @@ const HowMuch: FunctionComponent = (props) => {
           fontWeight={'860'}
           lineHeight={'15px'}
         >
-          STAKE NOW & GET FREE TerraT 
+          STAKE NOW & GET FREE NearT 
         </Text>
       </Button>
     </Flex>

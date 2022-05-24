@@ -1,9 +1,10 @@
 import { AppContextInterface, ActionKind } from './store'
-import { MsgExecuteContract, WasmAPI, Coin, LCDClient, Fee } from '@terra-money/terra.js'
-import { ConnectedWallet } from '@terra-money/wallet-provider'
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { successOption, errorOption, POOL } from './constants';
+import { successOption, errorOption, coins, POOL } from './constants';
+import NearWalletSelector from "@near-wallet-selector/core";
+import { providers, utils } from "near-api-js";
+import { CodeResult } from "near-api-js/lib/providers/provider";
 
 export function shortenAddress(address: string | undefined) {
   if (address) {
@@ -14,192 +15,238 @@ export function shortenAddress(address: string | undefined) {
   return "";
 }
 
-function calcUSD(amountHistory: any, ustPrice: number, lunaPrice: number) {
+function calcUSD(amountHistory: any, prices: any) {
   if (amountHistory == undefined) return undefined;
 
   for (let i = 0; i < amountHistory.length; i++) {
-    amountHistory[i].ust_amount = floorNormalize(amountHistory[i].ust_amount) + floorNormalize(amountHistory[i].ust_reward);
-    amountHistory[i].luna_amount = floorNormalize(amountHistory[i].luna_amount) + floorNormalize(amountHistory[i].luna_reward);
-    amountHistory[i].totalUST =
-      amountHistory[i].ust_amount + amountHistory[i].luna_amount * lunaPrice / ustPrice;
+    amountHistory[i].totalUSD = 0;
+    coins.forEach(coin => {
+      amountHistory[i][coin.name + '_amount'] = floorNormalize(amountHistory[i][coin.name + '_deposit_amount']) + floorNormalize(amountHistory[i][coin.name + '_reward_amount']);
+      if(amountHistory[i][coin.name + '_amount'] && prices[coin.name])
+        amountHistory[i].totalUSD += amountHistory[i][coin.name + '_amount'] * prices[coin.name];
+    })
   }
 
   return amountHistory;
 }
 export async function fetchData(state: AppContextInterface, dispatch: React.Dispatch<any>) {
+  const selector = state.nearSelector;
+  if(!selector) return;
+
   dispatch({ type: ActionKind.setLoading, payload: true });
 
-  const wallet = state.wallet;
-  const api = new WasmAPI(state.lcd.apiRequester);
+  const { nodeUrl } = selector.network;
+  const provider = new providers.JsonRpcProvider({ url: nodeUrl });
 
   let amountHistory = undefined,
-    aprUstHistory = undefined,
-    aprLunaHistory = undefined,
-    ustInfo = undefined,
-    lunaInfo = undefined,
-    userInfoUst = undefined,
-    userInfoLuna = undefined,
+    aprHistory:any = undefined,
+    coinInfo: any = undefined,
+    userInfoCoin:any = undefined,
     farmPrice = undefined,
     farmInfo = undefined,
+    portInfo = undefined,
     farmStartTime = undefined,
-    ust_total_rewards = undefined,
-    luna_total_rewards = undefined,
-    status: any = undefined
+    status: any = undefined,
+    coin_total_rewards: any = undefined
 
+  coinInfo = {};
   try {
-    lunaInfo = await axios.get(
-      `https://api.extraterrestrial.money/v1/api/prices?symbol=LUNA`
-    );
-  } catch (e) { }
-
-  try {
-    ustInfo = await axios.get(
-      `https://api.extraterrestrial.money/v1/api/prices?symbol=UST`
-    );
-  } catch (e) { }
-  const ustPrice = ustInfo ? ustInfo?.data.prices.UST.price : state.ustPrice;
-  const lunaPrice = lunaInfo ? lunaInfo?.data.prices.LUNA.price : state.lunaPrice;
-
-  if (ustPrice !== undefined)
-    dispatch({ type: ActionKind.setUstPrice, payload: ustPrice });
-  if (lunaPrice !== undefined)
-    dispatch({ type: ActionKind.setLunaPrice, payload: lunaPrice });
-
-  try {
-    status = await api.contractQuery(
-      POOL,
-      {
-        get_status: { wallet: wallet?.walletAddress }
+    for(let coin of coins)
+    {
+      const instance = axios.create({
+        baseURL: `https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${coin.id}`
       });
-  } catch (e) {
-    console.log(e)
-  }
-  console.log(status)
+      instance.defaults.headers.get['Access-Control-Allow-Origin'] = '*';
+      const res = await instance.get('');
+      coinInfo[coin.name] = res.data[coin.id].usd;
+    }
+  } catch (e) { }
+  
+  const rates:any = {};
+  coins.forEach(coin => {
+    rates[coin.name] = coinInfo[coin.name] ? coinInfo[coin.name] : state.coinPrice[coin.name];
+    dispatch({ type: ActionKind.setCoinPrice, payload: { type: coin.name, data: rates[coin.name]} });
+  })
+
+  try {
+    const res = await provider
+    .query<CodeResult>({
+      request_type: "call_function",
+      account_id: POOL,
+      method_name: `get_user_state`,
+      args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
+      finality: "optimistic",
+    });
+    status = JSON.parse(Buffer.from(res.result).toString());
+  } catch (e) { console.log(e) }
 
   if (status) {
     if (status.amount_history !== undefined)
-      dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(status.amount_history, ustPrice, lunaPrice) });
-    if (status.apr_ust_history !== undefined)
-      dispatch({ type: ActionKind.setAprUstHistory, payload: status.apr_ust_history });
-    if (status.apr_luna_history !== undefined)
-      dispatch({ type: ActionKind.setAprLunaHistory, payload: status.apr_luna_history });
-
-    if (status.userinfo_ust !== undefined)
-      dispatch({ type: ActionKind.setUserInfoUst, payload: status.userinfo_ust });
-    if (status.userinfo_luna !== undefined)
-      dispatch({ type: ActionKind.setUserInfoLuna, payload: status.userinfo_luna });
-
+      dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(status.amount_history, rates) });
     if (status.farm_price !== undefined)
-      dispatch({ type: ActionKind.setFarmPrice, payload: parseInt(status.farm_price) });
-    if (status.farm_info !== undefined)
-      dispatch({ type: ActionKind.setFarmInfo, payload: status.farm_info });
-    if (status.farm_starttime !== undefined)
-      dispatch({ type: ActionKind.setFarmStartTime, payload: parseInt(status.farm_starttime) });
+      dispatch({ type: ActionKind.setFarmPrice, payload: status.farm_price });
+    if (status.user_farn_info !== undefined)
+      dispatch({ type: ActionKind.setFarmInfo, payload: status.user_farn_info });
+    if (status.farm_start_time !== undefined)
+      dispatch({ type: ActionKind.setFarmStartTime, payload: status.farm_start_time/10 ** 9 });
 
-    if (status.total_rewards_ust != undefined)
-      dispatch({ type: ActionKind.setUstTotalRewards, payload: parseInt(status.total_rewards_ust) });
-    if (status.total_rewards_luna != undefined)
-      dispatch({ type: ActionKind.setLunaTotalRewards, payload: parseInt(status.total_rewards_luna) });
+    coins.forEach(async coin => {
+      if (status[`${coin.name}_apr_history`] !== undefined) {
+        dispatch({ type: ActionKind.setAprHistory, payload: { type: coin.name, data: status[`${coin.name}_apr_history`] } });
+      }
 
-    if(status.pot_info != undefined)
-      dispatch({ type: ActionKind.setPotInfo, payload: status.pot_info });
+      if (status[`${coin.name}_user_info`] !== undefined) {
+        const payload = {
+          type: coin.name,
+          data: {
+            ...status[`${coin.name}_user_info`],
+            amount: status[`${coin.name}_user_info`].deposit_amount
+          }
+        }
+        dispatch({ type: ActionKind.setUserInfoCoin, payload: payload });
+      }
+
+      if (status[`${coin.name}_total_reward`] != undefined)
+        dispatch({ type: ActionKind.setCoinTotalRewards, payload: { type: coin.name, data: parseInt(status[`${coin.name}_total_reward`]) } });
+
+      if(status[`${coin.name}_user_pot_info`] != undefined){
+        const payload = {
+          [`qualified_${coin.name}_amount`]: status[`${coin.name}_user_pot_info`].qualified_amount,
+          [`${coin.name}_amount`]: status[`${coin.name}_user_pot_info`].unqualified_amount
+        }
+        dispatch({ type: ActionKind.setPotInfo, payload: payload });
+      }
+    })
   }
   else {
-    try {
-      amountHistory = await api.contractQuery(
-        POOL,
-        {
-          get_amount_history: {}
-        });
-    } catch (e) { }
+    /* ------------------- start contract provider -----------------------*/
+    // try {
+    //   const amountsProvider = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: "get_token_amount_historys",
+    //     args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
+    //     finality: "optimistic",
+    //   });
+    //   amountHistory = JSON.parse(Buffer.from(amountsProvider.result).toString());
+    //   console.log(amountHistory)
+    // } catch (e) { console.log(e) }
 
-    try {
-      aprUstHistory = await api.contractQuery(
-        POOL,
-        {
-          get_history_of_apr_ust: {}
-        }
-      )
-    } catch (e) { }
+    // try {
+    //   if(!aprHistory) aprHistory = {};
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_token_apr_history`,
+    //     args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
+    //     finality: "optimistic",
+    //   });
+    //   aprHistory['usdc'] = JSON.parse(Buffer.from(res.result).toString());
+    // } catch (e) { console.log(e) }
 
-    try {
-      aprLunaHistory = await api.contractQuery(
-        POOL,
-        {
-          get_history_of_apr_luna: {}
-        }
-      )
-    } catch (e) { }
+    // try {
+    //   if(!userInfoCoin) userInfoCoin = {};
+    //   for(const coin of coins)
+    //   {
+    //     const res = await provider
+    //     .query<CodeResult>({
+    //       request_type: "call_function",
+    //       account_id: POOL,
+    //       method_name: `get_user_pool_info`,
+    //       args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
+    //       finality: "optimistic",
+    //     });
+    //     userInfoCoin['usdc'] = JSON.parse(Buffer.from(res.result).toString());
+    //     userInfoCoin['usdc'] = userInfoCoin['usdc'].map((item: any) => ({...item, amount: item.deposit_amount}))[0];
+    //   }
+    // } catch (e) { console.log(e)}
 
-    try {
-      userInfoUst = await api.contractQuery(
-        POOL,
-        {
-          get_user_info_ust: {
-            wallet: wallet?.walletAddress
-          }
-        }
-      )
-    } catch (e) { }
+    // try {
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_farm_price`,
+    //     args_base64: "",
+    //     finality: "optimistic",
+    //   });
+    //   farmPrice = JSON.parse(Buffer.from(res.result).toString());
+    // } catch (e) { }
 
-    try {
-      userInfoLuna = await api.contractQuery(
-        POOL,
-        {
-          get_user_info_luna: {
-            wallet: wallet?.walletAddress
-          }
-        }
-      )
-    } catch (e) { }
+    // try {
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_user_farm_info`,
+    //     args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
+    //     finality: "optimistic",
+    //   });
+    //   farmInfo = JSON.parse(Buffer.from(res.result).toString());
+    // } catch (e) { }
+  
+    // try {
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_farm_start_time`,
+    //     args_base64: "",
+    //     finality: "optimistic",
+    //   });
+    //   farmStartTime = JSON.parse(Buffer.from(res.result).toString());
+    // } catch (e) { }
+  
+    // try {
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_user_pot_info`,
+    //     args_base64: btoa(JSON.stringify({wallet: localStorage.getItem('accountId')})),
+    //     finality: "optimistic",
+    //   });
+    //   portInfo = JSON.parse(Buffer.from(res.result).toString());
+    //   portInfo = portInfo.map((item: any) => ({...item, amount: item.unqualified_amount}))
+    // } catch (e) { }
 
-    try {
-      farmPrice = await api.contractQuery(
-        POOL,
-        {
-          get_farm_price: {}
-        }
-      )
-    } catch (e) { }
+    // try {
+    //   if(!coin_total_rewards) coin_total_rewards = {};
+    //   const res = await provider
+    //   .query<CodeResult>({
+    //     request_type: "call_function",
+    //     account_id: POOL,
+    //     method_name: `get_token_total_reward`,
+    //     args_base64: btoa(JSON.stringify({token_name: 'usdc'})),
+    //     finality: "optimistic",
+    //   });
+    //   coin_total_rewards['usdc'] = JSON.parse(Buffer.from(res.result).toString());
+      
+    // } catch (e) { console.log(e)}
+  
+    // if (amountHistory !== undefined)
+    //   dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(amountHistory, rates) });
+    // if (farmPrice !== undefined)
+    //   dispatch({ type: ActionKind.setFarmPrice, payload: farmPrice });
+    // if (farmInfo !== undefined)
+    //   dispatch({ type: ActionKind.setFarmInfo, payload: farmInfo });
+    // if (farmStartTime !== undefined)
+    //   dispatch({ type: ActionKind.setFarmStartTime, payload: farmStartTime });
+    // if(portInfo != undefined)
+    //   dispatch({ type: ActionKind.setPotInfo, payload: portInfo });
+  
+    // coins.forEach(async coin => {
+    //   if (aprHistory[coin.name] !== undefined)
+    //     dispatch({ type: ActionKind.setAprHistory, payload: { type: coin.name, data: aprHistory[coin.name] } });
+  
+    //   if (userInfoCoin[coin.name] !== undefined)
+    //     dispatch({ type: ActionKind.setUserInfoCoin, payload: { type: coin.name, data: userInfoCoin[coin.name] } });
 
-    try {
-      farmInfo = await api.contractQuery(
-        POOL,
-        {
-          get_farm_info: {
-            wallet: wallet?.walletAddress
-          }
-        }
-      )
-    } catch (e) { }
-
-    try {
-      farmStartTime = await api.contractQuery(
-        POOL,
-        {
-          get_farm_starttime: {}
-        }
-      )
-    } catch (e) { }
-
-    if (amountHistory !== undefined)
-      dispatch({ type: ActionKind.setAmountHistory, payload: calcUSD(amountHistory, ustPrice, lunaPrice) });
-    if (aprUstHistory !== undefined)
-      dispatch({ type: ActionKind.setAprUstHistory, payload: aprUstHistory });
-    if (aprLunaHistory !== undefined)
-      dispatch({ type: ActionKind.setAprLunaHistory, payload: aprLunaHistory });
-
-    if (userInfoUst !== undefined)
-      dispatch({ type: ActionKind.setUserInfoUst, payload: userInfoUst });
-    if (userInfoLuna !== undefined)
-      dispatch({ type: ActionKind.setUserInfoLuna, payload: userInfoLuna });
-
-    if (farmPrice !== undefined)
-      dispatch({ type: ActionKind.setFarmPrice, payload: farmPrice });
-    if (farmInfo !== undefined)
-      dispatch({ type: ActionKind.setFarmInfo, payload: farmInfo });
-    if (farmStartTime !== undefined)
-      dispatch({ type: ActionKind.setFarmStartTime, payload: farmStartTime });
+    //   if (coin_total_rewards[coin.name] !== undefined)
+    //     dispatch({ type: ActionKind.setCoinTotalRewards, payload: { type: coin.name, data: coin_total_rewards[coin.name] } });
+    // })
   }
 
   dispatch({ type: ActionKind.setLoading, payload: false });
@@ -210,101 +257,60 @@ export function sleep(ms: number) {
 }
 
 export async function estimateSend(
-  wallet: ConnectedWallet,
-  lcd: LCDClient,
-  msgs: MsgExecuteContract[],
-  message: string,
-  memo: string
+  selector: any,
+  methodName: string,
+  args: any,
+  contract?: any
 ) {
-  console.log(msgs);
-  const obj = new Fee(10_000, { uusd: 4500 })
-
-  let accountInfo: any | undefined = undefined;
-
-  await lcd.auth.accountInfo(
-    wallet.walletAddress
-  )
-    .then((e) => {
-      accountInfo = e;
-    })
-    .catch((e) => {
-      toast(e.message, errorOption)
-      console.log(e.message);
-    })
-  console.log(accountInfo);
-  if (!accountInfo)
+  if(!selector) 
     return undefined;
 
-  let txOptions =
-  {
-    msgs: msgs,
-    memo: memo,
-    gasPrices: obj.gasPrices(),
-    gasAdjustment: 1.7,
-  };
-
-  let rawFee: any | undefined = undefined;
-  await lcd.tx.estimateFee(
-    [
+  const BOATLOAD_OF_GAS = utils.format.parseNearAmount("0.00000000003")!;
+  console.log(contract ?? POOL)
+  selector
+  .signAndSendTransaction({
+    receiverId: contract ?? POOL,
+    actions: [
       {
-        sequenceNumber: accountInfo.getSequenceNumber(),
-        publicKey: accountInfo.getPublicKey(),
+        type: "FunctionCall",
+        params: {
+          methodName: methodName,
+          args: args,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          deposit: 1,
+          gas: "50000000000000",
+        }
       },
     ],
-    txOptions
-  )
-    .then((e) => {
-      rawFee = e;
-    })
-    .catch((e) => {
-      toast(e.message, errorOption)
-      console.log(e.message);
-    })
-
-  if (!rawFee)
+  })
+  .then(async (e: any) => {
+    toast("Successs! Please wait", successOption);
+    return e;
+  })
+  .catch((e: any) => {
+    toast(e.message, errorOption);
     return undefined;
+  });
 
-  return await wallet
-    .post({
-      msgs: msgs,
-      memo: memo,
-      fee: rawFee,
-      gasPrices: obj.gasPrices(),
-      gasAdjustment: 1.7,
-    })
-    .then(async (e) => {
-      if (e.success) {
-        toast("Successs! Please wait", successOption);
-        return e.result.txhash;
-      } else {
-        toast(e.result.raw_log, errorOption);
-        console.log(e.result.raw_log);
-        return undefined;
-      }
-    })
-    .catch((e) => {
-      toast(e.message, errorOption);
-      console.log(e.message);
-      return undefined;
-    })
+  return undefined;  
 }
 
-export function checkNetwork(wallet: ConnectedWallet | undefined, state: AppContextInterface) {
+export function checkNetwork(selector: NearWalletSelector | undefined, state: AppContextInterface) {
   //----------verify connection--------------------------------
-  if (wallet === undefined) {
-    toast("Please connect wallet first!", errorOption);
-    console.log("Please connect wallet first!");
+  if (selector === undefined) {
+    toast("Please connect near wallet first!", errorOption);
+    console.log("Please connect near wallet first!");
     return false;
   }
   else {
     toast.dismiss();
   }
 
-  if (state.net == 'mainnet' && wallet.network.name == 'testnet') {
+  if (state.net == 'mainnet' && selector.network.networkId == 'testnet') {
     toast("Please switch to mainnet!", errorOption);
     return false;
   }
-  if (state.net == 'testnet' && wallet.network.name == 'mainnet') {
+  if (state.net == 'testnet' && selector.network.networkId == 'mainnet') {
     toast("Please switch to Testnet!", errorOption);
     return false;
   }
@@ -316,7 +322,7 @@ export function floorNormalize(amount: number) {
 }
 
 export function floor(amount: number) {
-  return Math.floor(amount * 100) / 100;
+  return Math.floor(amount * 10000) / 10000;
 }
 
 export function getDateString(time: number) {

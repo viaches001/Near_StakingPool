@@ -3,6 +3,7 @@
 # dependencies
 /node_modules
 /.pnp
+/smart_contract
 .pnp.js
 
 # testing

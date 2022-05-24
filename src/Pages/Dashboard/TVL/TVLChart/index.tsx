@@ -11,7 +11,6 @@ interface Props{
   id: string
 }
 const TVLChart: FunctionComponent<Props> = ({data, id}) => {
-  console.log(data)
   let canvasRef = createRef<HTMLCanvasElement>();
   let tooltipRef = createRef<HTMLDivElement>();
   let chart!: Chart;

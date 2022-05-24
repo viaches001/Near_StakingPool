@@ -2,8 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState, AppThunk } from './store';
 
 export type tabStatus = 'dashboard' | 'mypage' | 'earn' | 'utility';
-export type depositTabStatus = 'all' | 'ust' | 'luna';
-
+export type depositTabStatus = 'all' | 'stable' | 'volatile';
 export interface State {
   tab: tabStatus,
   depositTab: depositTabStatus,

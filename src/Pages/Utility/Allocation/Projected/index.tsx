@@ -3,18 +3,22 @@ import { VStack, HStack, Stack, Flex, Text, Tooltip, Image, Center, Divider, But
 
 import AnimationNumber from '../../../Components/AnimationNumber';
 import Warning from '../../../../assets/Warning.svg'
-import { OpenDepositModal, useStore, useUSTDeposited, useLUNADeposited, useExchangeRate } from '../../../../store';
+import { OpenDepositModal, useStore, useCoinDeposited, useExchangeRate } from '../../../../store';
+import { coins } from '../../../../constants';
 
 const Projected: FunctionComponent = (props) => {
   const {state, dispatch} = useStore();
-  const ustDeposited = useUSTDeposited();
-  const lunaDeposited = useLUNADeposited();
-  const rate = useExchangeRate();
-  const total = ustDeposited + lunaDeposited * rate;
+  const coinDeposited = useCoinDeposited();
+  const rates = useExchangeRate();
+  let total = 0;
+  coins.forEach(coin => {
+    total += coinDeposited[coin.name] * rates[coin.name];
+  })
+
   const dayReward = total/1000*24;
 
   const remain = 60 - Math.floor((Date.now() / 1000 - state.farmStartTime) / 60 / 60 / 24);
-  const expected = Math.floor(dayReward * remain * 1.25);
+  const expected = Math.floor(dayReward * remain * 1.25 * 100)/100;
 
   return (
     <VStack w={'100%'} color={'#CEBFBF'} spacing={'20px'}>
@@ -48,7 +52,7 @@ const Projected: FunctionComponent = (props) => {
           fontWeight={'860'}
           lineHeight={'36px'}
         >
-          UST
+          USD
         </Text>
       </HStack>
     </VStack>

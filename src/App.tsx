@@ -7,7 +7,7 @@ import MyPage from './Pages/MyPage'
 import Earn from './Pages/Earn'
 import Utility from './Pages/Utility'
 import CommunityFarm from './Pages/CommunityFarm';
-import PotReward from './Pages/PotReward';
+import Terms from './Pages/Terms';
 
 function App() {
   return (
@@ -20,7 +20,7 @@ function App() {
           <Route path="earn" element={<Earn />} />
           <Route path="utility" element={<Utility />} />
           <Route path="farm" element={<CommunityFarm />} />
-          <Route path="pot" element={<PotReward />} />
+          <Route path="terms" element={<Terms />} />
           <Route path="*" element={"404"} />
         </Route>
       </Routes>

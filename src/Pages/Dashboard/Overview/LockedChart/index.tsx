@@ -6,23 +6,13 @@ import './Chart.css'
 import { useStore } from '../../../../store';
 import { getDateString } from '../../../../Util';
 import Indicator from './../../../../assets/Indicator.svg'
-import {amountHistory} from '../../../../constants'
 
 interface Props{
 
 }
 const LockedChart: FunctionComponent<Props> = () => {
   const {state, dispatch} = useStore();  
-  // const data = state.amountHistory;
-  const data = [
-    {time: 1605225600, totalUST: 2686772.1275777174},
-    {time: 1605312000, totalUST: 2599113.177879632},
-    {time: 1605398400, totalUST: 2647372.7178333146},
-    {time: 1605484800, totalUST: 2624493.639715925},
-    {time: 1605571200, totalUST: 2637887.885326944},
-    {time: 1605657600, totalUST: 2650648.347021975},
-    {time: 1605744000, totalUST: 2643382.091236632},
-  ];
+  const data = state.amountHistory;
 
   const [chart, setChart] = useState<Chart | undefined>(undefined);
 
@@ -74,8 +64,8 @@ const LockedChart: FunctionComponent<Props> = () => {
                   const i = tooltip.dataPoints[0].dataIndex;
                   const item = data[i];
 
-                  div1.innerHTML = `${getDateString(item.time)}`;
-                  div2.innerHTML = `$${item.totalUST.toLocaleString()}`;
+                  div1.innerHTML = `${getDateString(item.time/10 ** 9)}`;
+                  div2.innerHTML = `$${item.totalUSD.toLocaleString()}`;
 
                   let style="border-radius: 50%; background-color: #493C3C; width: 20px; height: 20px; position: absolute; ";
                   style += `top: ${chart.scales.y.height-10}px;`;
@@ -125,8 +115,8 @@ const LockedChart: FunctionComponent<Props> = () => {
         labels: data.map(({ time }) => time.toString()),
         datasets: [
           {
-            data: data.map(({ totalUST }) =>
-            totalUST,
+            data: data.map(({ totalUSD }) =>
+              totalUSD,
             ),
             borderColor: "#F9D85E",
             borderWidth: 2,
@@ -142,20 +132,12 @@ const LockedChart: FunctionComponent<Props> = () => {
 
   };
 
-  // useEffect(()=>{
-  //   if(data.length == 0)
-  //     return;
-
-  //   createChart()
-  // }, [data])
-
-  
   useEffect(()=>{
     if(data.length == 0)
       return;
 
     createChart()
-  }, [])
+  }, [data])
 
   return (
     <div style={{width: '100%', position: 'relative', height: '330px', marginTop:'30px'}}>

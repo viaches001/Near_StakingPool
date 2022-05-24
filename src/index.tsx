@@ -14,28 +14,22 @@ import theme from './theme';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import {
-  NetworkInfo,
-  WalletProvider,
-  WalletStatus,
-  getChainOptions,
-} from '@terra-money/wallet-provider';
+import { WalletSelectorContextProvider } from './context/NearWalletSelectorContext';
 
-getChainOptions().then((chainOptions) => {
-  ReactDOM.hydrate(
-    <React.StrictMode>
-      <StoreProvider>
-        <WalletProvider {...chainOptions}>
-          <ChakraProvider theme={theme}>
-            <App />
-            <ToastContainer/>
-          </ChakraProvider>
-        </WalletProvider>
-      </StoreProvider>
-    </React.StrictMode>,
-    document.getElementById('root')
-  );
-});
+ReactDOM.hydrate(
+  <React.StrictMode>
+    <StoreProvider>
+      <WalletSelectorContextProvider>
+        <ChakraProvider theme={theme}>
+          <App />
+          <ToastContainer/>
+        </ChakraProvider>
+      </WalletSelectorContextProvider>
+    </StoreProvider>
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA

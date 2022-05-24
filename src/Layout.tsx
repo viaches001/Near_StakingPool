@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo } from 'react'
-import { QueryClient, QueryClientProvider, useInfiniteQuery } from "react-query"
+import { QueryClient, QueryClientProvider } from "react-query"
 import { Outlet, Link } from "react-router-dom";
-import { VStack, Flex, useDisclosure, useEventListenerMap } from '@chakra-ui/react'
-import { useLCD, useWallet, useTerraAPIURL, useStore, useNetworkName, ActionKind } from './store';
+import { VStack, Flex, useDisclosure } from '@chakra-ui/react'
+import { useNearSelector, useStore, useNetworkName, ActionKind } from './store';
 
 import Navbar from './Pages/Navbar'
 import Footer from "./Pages/Footer";
 import DepositModal from './Pages/DepositModal'
 import WithdrawModal from './Pages/WithdrawModal'
 import WaitingModal from './Pages/WaitingModal';
+import FailedTxModal from './Pages/FailedTxModal';
 import { fetchData, checkNetwork } from './Util';
 
 const Layout = () => {
@@ -18,25 +19,28 @@ const Layout = () => {
   const { isOpen: isOpenDeposit, onOpen: onOpenDeposit, onClose: onCloseDeposit } = useDisclosure();
   const { isOpen: isOpenWithdraw, onOpen: onOpenWithdraw, onClose: onCloseWithdraw } = useDisclosure();
   const { isOpen: isOpenWaiting, onOpen: onOpenWaiting, onClose: onCloseWaiting } = useDisclosure();
+  const { isOpen: isOpenTxFailed, onOpen: onOpenTxFailed, onClose: onCloseTxFaied } = useDisclosure();
 
   const { state, dispatch } = useStore();
-  const lcd = useLCD();
-  const wallet = useWallet();
+  const selector = useNearSelector();
 
   useEffect(() => {
     dispatch({ type: ActionKind.setOpenDepositModal, payload: onOpenDeposit });
     dispatch({ type: ActionKind.setOpenWithdrawModal, payload: onOpenWithdraw });
     dispatch({ type: ActionKind.setOpenWaitingModal, payload: onOpenWaiting });
     dispatch({ type: ActionKind.setCloseWaitingModal, payload: onCloseWaiting });
-  }, [dispatch, onOpenDeposit, onOpenWithdraw, onOpenWaiting, onCloseWaiting])
+    dispatch({ type: ActionKind.setOpenTxFailedModal, payload: onOpenTxFailed });
+    dispatch({ type: ActionKind.setCloseTxFailedModal, payload: onCloseTxFaied });
+  }, [dispatch, onOpenDeposit, onOpenWithdraw, onOpenWaiting, onCloseWaiting, onOpenTxFailed, onCloseTxFaied])
 
   useEffect(() => {
     const fetchAll = async () => {
       fetchData(state, dispatch)
     }
-    if (checkNetwork(wallet, state))
+
+    if (checkNetwork(selector, state))
       fetchAll()
-  }, [lcd, wallet])
+  }, [selector])
 
   return (
     <QueryClientProvider client={queryClient} key={networkName}>
@@ -60,6 +64,7 @@ const Layout = () => {
           <DepositModal isOpen={isOpenDeposit} onClose={onCloseDeposit} />
           <WithdrawModal isOpen={isOpenWithdraw} onClose={onCloseWithdraw} />
           <WaitingModal isOpen={isOpenWaiting} onClose={onCloseWaiting} />
+          <FailedTxModal isOpen={isOpenTxFailed} onClose={onCloseTxFaied} />
         </VStack>
       </Flex>
     </QueryClientProvider>

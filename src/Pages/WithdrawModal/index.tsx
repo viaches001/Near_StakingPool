@@ -17,14 +17,19 @@ import InputPanel from './InputPanel';
 import SliderWish from './SliderWish';
 import Info from './Info';
 import WarningModal from './Warning';
+import { coins } from '../../constants';
+import { useStore } from '../../store';
 
 interface Props{
   isOpen: boolean,
-  onClose: () => void,
+  onClose: () => void
 }
 const WithdrawModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
   const [amount, setAmount] = useState('0');
   const { isOpen: isOpenWarning, onOpen: onOpenWarning, onClose: onCloseWarning } = useDisclosure();
+  const {state, dispatch} = useStore();
+  const coinType = state.coinType;
+  const coin = coins.find(item => item.name == coinType);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -34,7 +39,7 @@ const WithdrawModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
         rounded={'25px'}
         w={{sm:'80%', md: '562px', lg:'562px'}}
         minW={{sm:'80%', md: '562px', lg:'562px'}}
-        h={'453px'}
+        h={'512px'}
         px={{sm:'10px', md: '47px', lg: '47px'}}
         py={'39px'}
       >
@@ -60,12 +65,12 @@ const WithdrawModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
                 h={'100%'}
                 align={'center'}
                 justify={'left'}
-                display={{ sm: 'none', md: 'none', lg: 'flex' }}
+                display={'flex'}
               >
                 <Image 
                   borderRadius='full'
                   boxSize='36px'
-                  src={'img/dai.png'}
+                  src={coin?.img}
                   alt='Dan Abramov'
                   mt={'10px'}
                 />
@@ -76,7 +81,7 @@ const WithdrawModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
                     lineHeight={'36px'}
                     color={'white'}
                   >
-                    {'DAI'}
+                    {coin?.currency}
                   </Text>
                   <Text
                     fontSize={'13px'}
@@ -84,21 +89,22 @@ const WithdrawModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
                     lineHeight={'15.6px'}
                     color={'white'}
                   >
-                      {'Dai'}
+                    {coin?.blockchain}
                   </Text>
                 </VStack>
               </HStack>
            </GridItem>
         </Grid>
-        <InputPanel amount={amount} setAmount={setAmount}/>
+        <InputPanel amount={amount} setAmount={setAmount} coin={coin}/>
         <SliderWish amount={amount} setAmount={setAmount}/>
         <Divider mt={'23px'} orientation='horizontal' variant={'dashed'} color={'#CEC0C0'} />
-        <Info amount={amount}/>
+        <Info amount={amount} coin={coin}/>
         <Divider mt={'23px'} orientation='horizontal' variant={'dashed'} color={'#CEC0C0'} />
         <Button 
           w={'100%'} 
           h={'45px'} 
           mt={'26px'} 
+          color={'#CEC0C0'}
           background={'#493C3C'} 
           rounded={'25px'}
           onClick={() => {
