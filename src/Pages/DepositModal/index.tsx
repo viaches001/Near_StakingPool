@@ -16,7 +16,7 @@ import SliderWish from './SliderWish';
 import Info from './Info';
 import { useStore, useNearSelector, ActionKind } from '../../store';
 import { estimateSend, fetchData, sleep } from '../../Util';
-import { coins} from '../../constants';
+import { coins, POOL} from '../../constants';
 import { utils } from "near-api-js";
 import { useWalletSelector } from '../../context/NearWalletSelectorContext';
 
@@ -35,45 +35,62 @@ const DepositModal: FunctionComponent<Props> = ({isOpen, onClose}) => {
   const deposit = async () => {
     if(parseFloat(amount) <= 0  || !accountId)
       return;
+
+    // let res = await estimateSend(nearSelector, 'ft_metadata', {}, 'voucher_usdc.testnet');
+    // console.log(res)
       
     // let val = Math.floor(parseFloat(amount) * 10 ** 6);
-    let val = utils.format.parseNearAmount(amount);
-    const methodName = 'try_deposit';
-    const args = { token_name: "usdc", amount: String(val), qualified: true }
-
-    let res = await estimateSend(nearSelector, methodName, args);
+    let val = String(amount);
+    let args = {amount: val, receiver_id: POOL,  memo: "from User to Pool",  msg: JSON.stringify({
+      usdc: 1000000,
+      qualified: true,
+      wallet: accountId
+    }) }; 
+    // let res = await estimateSend(nearSelector, 'ft_transfer', args, coin?.testnet_address);
+    let res = await estimateSend(nearSelector, 'ft_transfer_call', { "amount": "1000000", "receiver_id": "staking_voucher_tokens.testnet",
+    "msg": JSON.stringify({
+      token_name: "usdc",
+      qualified: true,
+    }), }, "usdc.fakes.testnet");
     if(res){
-      console.log(res)
-      dispatch({type: ActionKind.setTxhash, payload: res});
-      onClose();
-      if(state.openWaitingModal)
-        state.openWaitingModal();
-
-      // let count = 10;
-      // let height = 0;
-      // while (count > 0) {
-      //   await lcd.tx.txInfo(res)
-      //     // eslint-disable-next-line no-loop-func
-      //     .then((e) => {
-      //       if (e.height > 0) {
-      //         toast.dismiss();
-      //         toast("Success", successOption);
-      //         height = e.height;
-      //       }
-      //     })
-      //     .catch((e) => {})
-
-      //   if (height > 0) break;
-
-      //   await sleep(1000);
-      //   count--;
-      // }
-      
-      if(state.closeWaitingModal)
-        state.closeWaitingModal();
-
-      fetchData(state, dispatch);
+      console.log(res);
     }
+    
+    // const methodName = 'try_deposit';
+    // args = { token_name: "usdc", amount: String(val), qualified: true }
+
+    // res = await estimateSend(nearSelector, methodName, args);
+    // if(res){
+    //   dispatch({type: ActionKind.setTxhash, payload: res});
+    //   onClose();
+    //   if(state.openWaitingModal)
+    //     state.openWaitingModal();
+
+    //   // let count = 10;
+    //   // let height = 0;
+    //   // while (count > 0) {
+    //   //   await lcd.tx.txInfo(res)
+    //   //     // eslint-disable-next-line no-loop-func
+    //   //     .then((e) => {
+    //   //       if (e.height > 0) {
+    //   //         toast.dismiss();
+    //   //         toast("Success", successOption);
+    //   //         height = e.height;
+    //   //       }
+    //   //     })
+    //   //     .catch((e) => {})
+
+    //   //   if (height > 0) break;
+
+    //   //   await sleep(1000);
+    //   //   count--;
+    //   // }
+      
+    //   if(state.closeWaitingModal)
+    //     state.closeWaitingModal();
+
+    //   fetchData(state, dispatch);
+    // }
   }
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

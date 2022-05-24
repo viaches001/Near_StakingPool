@@ -259,16 +259,17 @@ export function sleep(ms: number) {
 export async function estimateSend(
   selector: any,
   methodName: string,
-  args: any
+  args: any,
+  contract?: any
 ) {
   if(!selector) 
     return undefined;
 
   const BOATLOAD_OF_GAS = utils.format.parseNearAmount("0.00000000003")!;
-
+  console.log(contract ?? POOL)
   selector
   .signAndSendTransaction({
-    receiverId: POOL,
+    receiverId: contract ?? POOL,
     actions: [
       {
         type: "FunctionCall",
@@ -276,8 +277,8 @@ export async function estimateSend(
           methodName: methodName,
           args: args,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          deposit: utils.format.parseNearAmount("0")!,
-          gas: BOATLOAD_OF_GAS
+          deposit: 1,
+          gas: "50000000000000",
         }
       },
     ],
